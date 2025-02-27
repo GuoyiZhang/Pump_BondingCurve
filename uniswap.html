@@ -125,12 +125,24 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-bottom: 15px;
+            margin-top: -10px;
         }
 
         .quick-input button {
             margin: 0;
-            padding: 8px;
+            padding: 10px;
             font-size: 14px;
+            height: auto;
+            min-height: 42px;
+            white-space: normal;
+            line-height: 1.2;
+        }
+
+        .quick-input button small {
+            display: block;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 2px;
         }
 
         h1 {
@@ -150,7 +162,7 @@
         input, select, button {
             width: 100%;
             padding: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 16px;
@@ -209,32 +221,41 @@
         }
 
         .formula-box {
-            background-color: #f8f9fa;
+            background: #f8f9fa;
             border-left: 4px solid #007bff;
             padding: 15px;
-            margin-top: 10px;
+            margin-top: 20px;
             border-radius: 4px;
         }
 
         .formula-title {
+            font-weight: 500;
             color: #333;
-            font-weight: bold;
-            margin-bottom: 10px;
-            font-size: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .formula-item {
             margin-bottom: 8px;
-            font-size: 13px;
             color: #666;
+            line-height: 1.6;
         }
 
         .formula-code {
             font-family: monospace;
-            background-color: #e9ecef;
+            background: #e9ecef;
             padding: 2px 6px;
             border-radius: 3px;
             color: #333;
+            font-size: 13px;
+        }
+
+        .formula-item small {
+            display: block;
+            margin-top: 8px;
+            color: #666;
         }
 
         .switch-container {
@@ -460,27 +481,19 @@
         <div class="formula-box">
             <div class="formula-title">📊 计算说明</div>
             <div class="formula-item">
-                • 恒定乘积: <span class="formula-code">k = token数量 × ETH数量</span>
+                • 恒定乘积: <span class="formula-code">k = token数量 × ${isEthBase ? 'ETH' : 'USDT'}数量</span>
             </div>
             <div class="formula-item">
-                • 代币价格(USD): <span class="formula-code">price = (ETH数量 × ETH价格) / token数量</span>
-            </div>
-            <div class="formula-item">
-                • 代币价格(ETH): <span class="formula-code">price = ETH数量 / token数量</span>
+                • 代币价格: <span class="formula-code">price = ${isEthBase ? 'ETH' : 'USDT'}数量 / token数量</span>
             </div>
             <div class="formula-item">
                 • 滑点计算: <span class="formula-code">slippage = (实际成交价 - 当前价格) / 当前价格 × 100%</span>
             </div>
             <div class="formula-item">
-                • 流动性(USD): <span class="formula-code">liquidity = (ETH数量 × ETH价格) + (token数量 × token价格)</span>
+                • 流动性: <span class="formula-code">liquidity = ${isEthBase ? 'ETH' : 'USDT'}数量 × 2</span>
             </div>
             <div class="formula-item">
-                <small>注意:</small>
-                <ul style="margin-top: 5px;">
-                    <li>ETH价格波动会影响池子总价值和代币美元价格</li>
-                    <li>交易时需同时考虑滑点和ETH价格波动的双重风险</li>
-                    <li>建议在ETH价格相对稳定时进行大额交易</li>
-                </ul>
+                <small>注: 由于AMM机制，交易量越大，滑点越大。建议分批交易以减少价格影响。</small>
             </div>
         </div>
     </div>
@@ -865,19 +878,39 @@
 
     // 修改按钮显示的文本
     function updateTradeButtons() {
-        const buttons = document.querySelectorAll('.quick-input button');
-        const values = [1000, 10000, 100000, 1000000];
+        const baseTokenButtons = document.querySelectorAll('.quick-input button[onclick^="calculateBaseTokenAmount"]');
+        const tokenButtons = document.querySelectorAll('.quick-input button[onclick^="quickFill"]');
+        const tradeButtons = document.querySelectorAll('.quick-input button[onclick^="quickFillTrade"]');
+        
+        const values = [10000, 100000, 1000000, 10000000];
         const ethPrice = isEthBase ? (parseFloat(document.getElementById('eth-price').value) || 0) : 0;
 
-        buttons.forEach((button, index) => {
-            if (button.getAttribute('onclick')?.includes('quickFillTrade')) {
-                if (isEthBase && ethPrice > 0) {
-                    const ethAmount = (values[index] / ethPrice).toFixed(4);
-                    button.innerHTML = `${ethAmount} ETH<br><small>${values[index].toLocaleString()}U</small>`;
-                } else {
-                    button.textContent = values[index] >= 10000 ? 
-                        `${(values[index]/10000)}万` : values[index];
-                }
+        // 更新基础代币（USDT/ETH）的快捷按钮
+        baseTokenButtons.forEach((button, index) => {
+            if (isEthBase && ethPrice > 0) {
+                const ethAmount = (values[index] / ethPrice).toFixed(4);
+                button.innerHTML = `${ethAmount} ETH<br><small>${values[index].toLocaleString()}U</small>`;
+            } else {
+                button.textContent = values[index] >= 10000 ? 
+                    `${(values[index]/10000)}万` : values[index];
+            }
+        });
+
+        // 更新代币数量的快捷按钮
+        tokenButtons.forEach((button, index) => {
+            button.textContent = values[index] >= 10000 ? 
+                `${(values[index]/10000)}万` : values[index];
+        });
+
+        // 更新交易数量的快捷按钮
+        const tradeValues = [1000, 10000, 100000, 1000000];
+        tradeButtons.forEach((button, index) => {
+            if (isEthBase && ethPrice > 0) {
+                const ethAmount = (tradeValues[index] / ethPrice).toFixed(4);
+                button.innerHTML = `${ethAmount} ETH<br><small>${tradeValues[index].toLocaleString()}U</small>`;
+            } else {
+                button.textContent = tradeValues[index] >= 10000 ? 
+                    `${(tradeValues[index]/10000)}万` : tradeValues[index];
             }
         });
     }
