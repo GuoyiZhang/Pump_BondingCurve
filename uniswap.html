@@ -548,19 +548,12 @@
         // 计算代币价格
         const tokenPrice = tokenAmount > 0 ? baseTokenAmount / tokenAmount : 0;
         
-        // 计算池子总流动性（USD）
-        let totalLiquidity;
-        if (isEthBase) {
-            // 如果基础币是ETH，需要考虑ETH价格
-            totalLiquidity = (baseTokenAmount * ethPrice) + (tokenAmount * tokenPrice * ethPrice);
-        } else {
-            // 如果基础币是USDT，直接计算
-            totalLiquidity = baseTokenAmount + (tokenAmount * tokenPrice);
-        }
+        // 计算池子总流动性
+        const totalLiquidity = baseTokenAmount * 2; // 因为两个代币价值相等
 
         // 更新显示
         document.getElementById('total-liquidity-right').textContent = isEthBase ? 
-            `$${totalLiquidity.toLocaleString()}` : 
+            `$${(totalLiquidity * ethPrice).toLocaleString()}` : 
             `${totalLiquidity.toLocaleString()} USDT`;
 
         document.getElementById('current-price-right').innerHTML = isEthBase ? 
@@ -653,10 +646,14 @@
             usdValue = isEthBase ? baseTokenPaid * ethPrice : baseTokenPaid;
         }
 
-        // 计算交易前后的总流动性
-        const liquidityBefore = baseTokenAmount + (tokenAmount * priceBeforeTrade);
-        const liquidityAfter = newBaseTokenAmount + (newTokenAmount * priceAfterTrade);
+        // 计算交易前后的流动性
+        const liquidityBefore = baseTokenAmount * 2; // 两个代币价值相等
+        const liquidityAfter = newBaseTokenAmount * 2;
         const liquidityChange = ((liquidityAfter - liquidityBefore) / liquidityBefore) * 100;
+
+        // 如果是ETH模式，转换为USD价值
+        const liquidityBeforeUSD = isEthBase ? liquidityBefore * ethPrice : liquidityBefore;
+        const liquidityAfterUSD = isEthBase ? liquidityAfter * ethPrice : liquidityAfter;
 
         // 计算预期价格（当前价格）
         const expectedPrice = priceBeforeTrade;
@@ -748,11 +745,17 @@
                 <div class="group-title">流动性信息</div>
                 <div class="result-item">
                     <span class="result-label">交易前流动性</span>
-                    <span class="result-value">${liquidityBefore.toLocaleString()} USDT</span>
+                    <span class="result-value">
+                        ${liquidityBefore.toFixed(6)} ${isEthBase ? 'ETH' : 'USDT'}
+                        ${isEthBase ? `<br><small>≈ $${liquidityBeforeUSD.toFixed(2)}</small>` : ''}
+                    </span>
                 </div>
                 <div class="result-item">
                     <span class="result-label">交易后流动性</span>
-                    <span class="result-value">${liquidityAfter.toLocaleString()} USDT</span>
+                    <span class="result-value">
+                        ${liquidityAfter.toFixed(6)} ${isEthBase ? 'ETH' : 'USDT'}
+                        ${isEthBase ? `<br><small>≈ $${liquidityAfterUSD.toFixed(2)}</small>` : ''}
+                    </span>
                 </div>
                 <div class="result-item">
                     <span class="result-label">流动性变化</span>
