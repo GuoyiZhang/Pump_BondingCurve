@@ -144,7 +144,7 @@
         function calculateData() {
             const initialX = 2;
             const initialY = 1073000191;
-            const k = 32190005730*(200/3000);
+            const k = 32190005730 * (200 / 3000);
             const data = [];
 
             for (let x = 0; x <= 6; x += 0.1) {
@@ -195,7 +195,7 @@
                     labels: data.map(d => d.XAmount),
                     datasets: [{
                         label: '代币价格',
-                        data: data.map(d => d.price),
+                        data: data.map(d => d.price.toFixed(18)),
                         borderColor: 'rgb(75, 192, 192)',
                         tension: 0.1,
                         yAxisID: 'y'
@@ -214,9 +214,9 @@
                             callbacks: {
                                 label: function (context) {
                                     if (context.dataset.label === '代币价格') {
-                                        return `代币价格: ${context.raw.toFixed(18)}`;
+                                        return `代币价格: ${context.raw.toFixed(2)}`;
                                     } else if (context.dataset.label === '代币数量') {
-                                        return `代币数量: ${context.raw.toLocaleString()}`;
+                                        return `代币数量: ${context.raw.toFixed(2)}`;
                                     }
                                     return context.raw;
                                 }
@@ -228,6 +228,11 @@
                             title: {
                                 display: true,
                                 text: 'ETH投入量'
+                            },
+                            ticks: {
+                                callback: function (value) {
+                                    return value.toFixed(2); // 显示9位小数
+                                }
                             }
                         },
                         y: {
@@ -239,7 +244,7 @@
                             },
                             ticks: {
                                 callback: function (value) {
-                                    return value.toFixed(4); // 显示9位小数
+                                    return value.toFixed(10); // 显示9位小数
                                 }
                             }
                         },
