@@ -479,22 +479,7 @@
         </select>
 
         <div class="formula-box">
-            <div class="formula-title">📊 计算说明</div>
-            <div class="formula-item">
-                • 恒定乘积: <span class="formula-code">k = token数量 × ${isEthBase ? 'ETH' : 'USDT'}数量</span>
-            </div>
-            <div class="formula-item">
-                • 代币价格: <span class="formula-code">price = ${isEthBase ? 'ETH' : 'USDT'}数量 / token数量</span>
-            </div>
-            <div class="formula-item">
-                • 滑点计算: <span class="formula-code">slippage = (实际成交价 - 当前价格) / 当前价格 × 100%</span>
-            </div>
-            <div class="formula-item">
-                • 流动性: <span class="formula-code">liquidity = ${isEthBase ? 'ETH' : 'USDT'}数量 × 2</span>
-            </div>
-            <div class="formula-item">
-                <small>注: 由于AMM机制，交易量越大，滑点越大。建议分批交易以减少价格影响。</small>
-            </div>
+            <!-- 内容将由 JavaScript 动态更新 -->
         </div>
     </div>
 
@@ -545,6 +530,7 @@
         // 更新快捷输入按钮显示
         updateTradeButtons();
         updatePoolInfo();
+        updateFormulaBox();
     }
 
     function quickFill(type, amount) {
@@ -914,6 +900,36 @@
             }
         });
     }
+
+    // 添加一个更新计算说明的函数
+    function updateFormulaBox() {
+        const baseToken = isEthBase ? 'ETH' : 'USDT';
+        const formulaBox = document.querySelector('.formula-box');
+        
+        formulaBox.innerHTML = `
+            <div class="formula-title">📊 计算说明</div>
+            <div class="formula-item">
+                • 恒定乘积: <span class="formula-code">k = token数量 × ${baseToken}数量</span>
+            </div>
+            <div class="formula-item">
+                • 代币价格: <span class="formula-code">price = ${baseToken}数量 / token数量</span>
+            </div>
+            <div class="formula-item">
+                • 滑点计算: <span class="formula-code">slippage = (实际成交价 - 当前价格) / 当前价格 × 100%</span>
+            </div>
+            <div class="formula-item">
+                • 流动性: <span class="formula-code">liquidity = ${baseToken}数量 × 2</span>
+            </div>
+            <div class="formula-item">
+                <small>注: 由于AMM机制，交易量越大，滑点越大。建议分批交易以减少价格影响。</small>
+            </div>
+        `;
+    }
+
+    // 页面加载时初始化
+    window.onload = function() {
+        updateFormulaBox();
+    };
 </script>
 
 </body>
