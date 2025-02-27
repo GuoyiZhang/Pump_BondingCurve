@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uniswap 价格计算器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            padding: 40px 20px;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 30px;
+            height: calc(100vh - 80px);
+        }
+
+        .input-section {
+            flex: 1;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .result-section {
+            width: 400px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 40px;
+            height: fit-content;
+        }
+
+        .result-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .result-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #666;
+        }
+
+        .result-value {
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .price-change-positive {
+            color: #28a745;
+        }
+
+        .price-change-negative {
+            color: #dc3545;
+        }
+
+        .quick-input {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .quick-input button {
+            margin: 0;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        input:focus, select:focus, button:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .error {
+            color: red;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .pool-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .pool-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .pool-info span {
+            color: #007bff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="input-section">
+        <h1>Uniswap 价格计算器</h1>
+
+        <label for="usdt-amount">池子中USDT的数量</label>
+        <input type="number" id="usdt-amount" placeholder="输入USDT的数量" oninput="updatePoolInfo()">
+        
+        <div class="quick-input">
+            <button onclick="quickFill('usdt', 10000)">1万</button>
+            <button onclick="quickFill('usdt', 100000)">10万</button>
+            <button onclick="quickFill('usdt', 1000000)">100万</button>
+            <button onclick="quickFill('usdt', 10000000)">1000万</button>
+        </div>
+
+        <label for="token-amount">池子中代币的数量</label>
+        <input type="number" id="token-amount" placeholder="输入代币的数量" oninput="updatePoolInfo()">
+        
+        <div class="quick-input">
+            <button onclick="quickFill('token', 10000)">1万</button>
+            <button onclick="quickFill('token', 100000)">10万</button>
+            <button onclick="quickFill('token', 1000000)">100万</button>
+            <button onclick="quickFill('token', 10000000)">1000万</button>
+        </div>
+
+        <label for="trade-amount">买入或卖出的数量</label>
+        <input type="number" id="trade-amount" placeholder="输入交易数量" oninput="calculatePrice()">
+        
+        <div class="quick-input">
+            <button onclick="quickFillTrade(1000)">1000</button>
+            <button onclick="quickFillTrade(10000)">1万</button>
+            <button onclick="quickFillTrade(100000)">10万</button>
+            <button onclick="quickFillTrade(1000000)">100万</button>
+        </div>
+
+        <label for="trade-type">选择交易类型</label>
+        <select id="trade-type" onchange="calculatePrice()">
+            <option value="buy">买入</option>
+            <option value="sell">卖出</option>
+        </select>
+    </div>
+
+    <div class="result-section">
+        <div class="result-card">
+            <h3>池子信息</h3>
+            <div class="result-item">
+                <span class="result-label">总流动性</span>
+                <span class="result-value" id="total-liquidity-right">0 USDT</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">当前价格</span>
+                <span class="result-value" id="current-price-right">0 USDT</span>
+            </div>
+        </div>
+
+        <div class="result-card" id="result">
+            <h3>交易预览</h3>
+            <!-- 计算结果将在这里动态显示 -->
+        </div>
+
+        <div class="error" id="error"></div>
+    </div>
+</div>
+
+<script>
+    function quickFill(type, amount) {
+        if (type === 'usdt') {
+            document.getElementById('usdt-amount').value = amount;
+        } else if (type === 'token') {
+            document.getElementById('token-amount').value = amount;
+        }
+        updatePoolInfo();
+    }
+
+    function quickFillTrade(amount) {
+        document.getElementById('trade-amount').value = amount;
+        calculatePrice();
+    }
+
+    function updatePoolInfo() {
+        const usdtAmount = parseFloat(document.getElementById('usdt-amount').value) || 0;
+        const tokenAmount = parseFloat(document.getElementById('token-amount').value) || 0;
+        
+        // 计算当前代币价格
+        const currentPrice = tokenAmount > 0 ? usdtAmount / tokenAmount : 0;
+        
+        // 计算池子总资金量 (USDT + Token价值)
+        const totalLiquidity = usdtAmount + (tokenAmount * currentPrice);
+
+        // 更新显示
+        document.getElementById('total-liquidity-right').textContent = `${totalLiquidity.toLocaleString()} USDT`;
+        document.getElementById('current-price-right').textContent = `${currentPrice.toFixed(6)} USDT`;
+
+        // 如果交易数量已输入，自动更新计算结果
+        const tradeAmount = document.getElementById('trade-amount').value;
+        if (tradeAmount) {
+            calculatePrice();
+        }
+    }
+
+    function calculatePrice() {
+        // 获取输入的池子资金量和交易量
+        const usdtAmount = parseFloat(document.getElementById('usdt-amount').value);
+        const tokenAmount = parseFloat(document.getElementById('token-amount').value);
+        const tradeAmount = parseFloat(document.getElementById('trade-amount').value);
+        const tradeType = document.getElementById('trade-type').value;
+
+        // 清空错误信息
+        document.getElementById('error').textContent = '';
+        document.getElementById('result').innerHTML = '';
+
+        // 如果没有输入完整，不显示错误，直接返回
+        if (!usdtAmount || !tokenAmount || !tradeAmount) {
+            return;
+        }
+
+        // 输入验证
+        if (usdtAmount <= 0 || tokenAmount <= 0 || tradeAmount <= 0) {
+            document.getElementById('error').textContent = '请确保输入的数值有效且大于零。';
+            return;
+        }
+
+        // 初始恒定乘积 k
+        const k = usdtAmount * tokenAmount;
+
+        // 计算交易前的价格
+        const priceBeforeTrade = usdtAmount / tokenAmount;
+
+        let newTokenAmount, newUsdtAmount, priceAfterTrade, priceChange;
+
+        if (tradeType === 'buy') {
+            // 买入操作，用户买入代币，增加USDT数量
+            newUsdtAmount = usdtAmount + tradeAmount;
+            newTokenAmount = k / newUsdtAmount;
+            priceAfterTrade = newUsdtAmount / newTokenAmount;
+        } else if (tradeType === 'sell') {
+            // 卖出操作，用户卖出代币，增加代币数量
+            newTokenAmount = tokenAmount + tradeAmount;
+            newUsdtAmount = k / newTokenAmount;
+            priceAfterTrade = newUsdtAmount / newTokenAmount;
+        }
+
+        // 计算价格变化量（滑点）
+        priceChange = ((priceAfterTrade - priceBeforeTrade) / priceBeforeTrade) * 100;
+
+        // 计算实际获得的代币数量或USDT数量
+        let tokenReceived, usdtPaid;
+        
+        if (tradeType === 'buy') {
+            tokenReceived = tokenAmount - newTokenAmount;
+            usdtPaid = tradeAmount;
+        } else {
+            tokenReceived = tradeAmount;
+            usdtPaid = usdtAmount - newUsdtAmount;
+        }
+
+        // 计算交易前后的总流动性
+        const liquidityBefore = usdtAmount + (tokenAmount * priceBeforeTrade);
+        const liquidityAfter = newUsdtAmount + (newTokenAmount * priceAfterTrade);
+        const liquidityChange = ((liquidityAfter - liquidityBefore) / liquidityBefore) * 100;
+
+        // 更新结果显示
+        document.getElementById('result').innerHTML = `
+            <h3>交易预览</h3>
+            <div class="result-item">
+                <span class="result-label">交易前价格</span>
+                <span class="result-value">${priceBeforeTrade.toFixed(6)} USDT</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">交易后价格</span>
+                <span class="result-value">${priceAfterTrade.toFixed(6)} USDT</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">价格变化</span>
+                <span class="result-value ${priceChange >= 0 ? 'price-change-positive' : 'price-change-negative'}">
+                    ${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(2)}%
+                </span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">交易前流动性</span>
+                <span class="result-value">${liquidityBefore.toLocaleString()} USDT</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">交易后流动性</span>
+                <span class="result-value">${liquidityAfter.toLocaleString()} USDT</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">流动性变化</span>
+                <span class="result-value ${liquidityChange >= 0 ? 'price-change-positive' : 'price-change-negative'}">
+                    ${liquidityChange >= 0 ? '+' : ''}${liquidityChange.toFixed(2)}%
+                </span>
+            </div>
+            ${tradeType === 'buy' ? `
+                <div class="result-item">
+                    <span class="result-label">支付USDT</span>
+                    <span class="result-value">${usdtPaid.toFixed(2)} USDT</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">获得代币</span>
+                    <span class="result-value">${tokenReceived.toFixed(6)}</span>
+                </div>
+            ` : `
+                <div class="result-item">
+                    <span class="result-label">支付代币</span>
+                    <span class="result-value">${tokenReceived.toFixed(6)}</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">获得USDT</span>
+                    <span class="result-value">${usdtPaid.toFixed(2)} USDT</span>
+                </div>
+            `}
+        `;
+    }
+</script>
+
+</body>
+</html>

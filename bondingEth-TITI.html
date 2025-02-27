@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Bonding Curve Analysis</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px Xid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        .info-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>10亿发行量 初始6000U Bonding Curve Analysis</h1>
+
+        <div class="info-box">
+            <h3>初始参数</h3>
+            <ul>
+                <li>虚拟池初始X: 30000 X</li>
+                <li>虚拟池初始代币: 1,073,000,191枚</li>
+                <li>初始k值: 32190005730000</li>
+                <li>初始代币价格: 0.0000279 X</li>
+            </ul>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="bondingCurveChart"></canvas>
+        </div>
+
+        <div class="info-box">
+            <h3>关键数据点</h3>
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>X投入量</th>
+                        <th>X价值(U)</th>
+                        <th>代币获得量</th>
+                        <th>价格(X)</th>
+                        <th>市值(X)</th>
+                        <th>市值(U)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        /*
+       推导过程：
+       
+       我们原来的公式为：
+           y(x) = initialY - k / (initialX + x)
+           price(x) = (initialX + x)^2 / k
+       
+       设定初始参数为：
+           initialX = 30000
+           initialY = 1,073,000,191   （原设定）
+           k = 32190005730000         （原设定）
+       
+       则有：
+           y(0) = initialY - k / initialX
+                = 1,073,000,191 - (32190005730000 / 30000)
+                = 1,073,000,191 - 1,073,000,191 = 0
+                
+           price(0) = (initialX)^2 / k
+                    = 30000^2 / 32190005730000
+                    ≈ 9×10^8 / 3.219000573×10^13
+                    ≈ 2.79×10^-5  X/代币
+       
+       如果希望将初始价格调整为 0.00000005 X/代币（即 5×10^-8 X/代币），
+       则必须满足：
+           price(0) = 30000^2 / k = 5×10^-8
+       解得：
+           k = 30000^2 / (5×10^-8) = 9×10^8 / (5×10^-8) = 1.8×10^16
+       
+       为了保证 y(0)=0，还需满足：
+           initialY = k / initialX = 1.8×10^16 / 30000 = 6×10^11
+       
+       此时，计算 x = 86000 时：
+           y(86000) = initialY - k / (30000 + 86000)
+                    = 6×10^11 - (1.8×10^16 / 115000)
+                    ≈ 6×10^11 - 1.565×10^11
+                    ≈ 4.435×10^11
+                    
+       也就是说，用户投入 86000 X 后将获得约 443.5 亿枚代币，
+       远远超过原来预期的约 8 亿枚代币。
+       
+       结论：
+       用该公式时，初始价格与最终获得代币数量由参数紧密关联，无法同时独立调整。
+       如果坚持要求初始价格为 5×10^-8 X/代币，那么最终代币数量会大大增加。
+       本代码保留原始公式和原参数（使得 x = 86000 时获得约 8 亿代币），
+       但 info-box 中显示的初始代币价格为 0.00000005 X 只是理想目标，
+       实际计算得初始价格为约 2.79×10^-5 X/代币。
+       */
+        // 计算函数
+        function calculateData() {
+            const initialX = 30000;
+            const initialY = 1073000191;
+            const k = 32190005730000;
+            const data = [];
+
+            for (let x = 0; x <= 86000; x += 1000) {
+                const y = initialY - (k / (initialX + x));
+                //const price = k / Math.pow(initialX + x, 2);
+                const price = Math.pow(initialX + x, 2) / k;
+                let marketCap = initialY * price;
+                //用户买进卖出最终募集资金85$X，经过置换得到8亿枚Memecoin代币。
+                //募集的资金79 $X（6 $X 作为上币费）和额外2亿枚代币被添加作为初始流动性的交易池，发送至 Raydium，最终代币总量为10亿枚。
+                if (x == 86000) {
+                    marketCap = (1000000000 * price);
+                }
+                data.push({
+                    XAmount: x,
+                    tokenAmount: Math.floor(y),
+                    price: price,
+                    //marketCap: (initialX + x) * price
+                    marketCap: marketCap
+                });
+            }
+            return data;
+        }
+
+        // 生成表格数据
+        function populateTable(data) {
+            const tbody = document.getElementById('tableBody');
+            data.forEach(point => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${point.XAmount.toFixed(2)}</td>
+                    <td>${0.2 * point.XAmount.toFixed(2)}</td>
+                    <td>${Math.floor(point.tokenAmount).toLocaleString()}</td>
+                    <td>${point.price.toFixed(9)}</td>
+                    <td>${point.marketCap.toFixed(9)}</td>
+                    <td>${0.2 * point.marketCap.toFixed(9)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 创建图表
+        function createChart(data) {
+            const ctx = document.getElementById('bondingCurveChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.XAmount),
+                    datasets: [{
+                        label: '代币价格',
+                        data: data.map(d => d.price),
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    }, {
+                        label: '代币数量',
+                        data: data.map(d => d.tokenAmount),
+                        borderColor: 'rgb(255, 99, 132)',
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    if (context.dataset.label === '代币价格') {
+                                        return `代币价格: ${context.raw.toFixed(9)}`;
+                                    } else if (context.dataset.label === '代币数量') {
+                                        return `代币数量: ${context.raw.toLocaleString()}`;
+                                    }
+                                    return context.raw;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'X投入量'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: '代币价格(X)'
+                            },
+                            ticks: {
+                                callback: function (value) {
+                                    return value.toFixed(9); // 显示9位小数
+                                }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: '代币数量'
+                            },
+                            ticks: {
+                                callback: function (value) {
+                                    return value.toLocaleString(); // 显示千分位
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 备用的 createChart 函数（使用 JS 注释掉，不会执行）
+        /*
+        function createChartAlternative(data) {
+            const ctx = document.getElementById('bondingCurveChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.XAmount),
+                    datasets: [{
+                        label: '代币价格',
+                        data: data.map(d => d.price),
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    }, {
+                        label: '代币数量',
+                        data: data.map(d => d.tokenAmount),
+                        borderColor: 'rgb(255, 99, 132)',
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'X投入量'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: '代币价格(X)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: '代币数量'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        */
+
+        // 初始化
+        const data = calculateData();
+        populateTable(data);
+        createChart(data);
+    </script>
+</body>
+
+</html>
