@@ -339,33 +339,22 @@
         .eth-price-input {
             display: flex;
             gap: 10px;
-            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .eth-price-input input {
+            margin-bottom: 0;
         }
 
         .eth-price-input button {
             white-space: nowrap;
             width: auto;
             margin-bottom: 0;
-            padding: 12px 15px;
-            font-size: 14px;
         }
 
         .price-loading {
+            font-size: 13px;
             color: #666;
-            font-size: 13px;
-            margin-left: 10px;
-        }
-
-        .auto-fetch-price {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 5px;
-        }
-
-        .auto-fetch-price label {
-            font-size: 13px;
-            margin: 0;
         }
     </style>
 </head>
@@ -384,26 +373,21 @@
             <span class="switch-label">ETH</span>
         </div>
 
-        <div id="eth-price-container" class="eth-price-container">
+        <div id="eth-price-section" style="display: none;">
             <label for="eth-price">ETH 当前价格 (USD)</label>
             <div class="eth-price-input">
-                <input type="number" id="eth-price" placeholder="输入ETH当前价格" oninput="updatePoolInfo()">
+                <input type="number" id="eth-price" placeholder="输入ETH价格" value="2351.40" oninput="updatePoolInfo()">
                 <button onclick="fetchPrice()">获取实时价格</button>
-                <span id="price-loading" class="price-loading"></span>
-            </div>
-            <div class="auto-fetch-price">
-                <input type="checkbox" id="auto-fetch" onchange="toggleAutoFetch()">
-                <label for="auto-fetch">自动更新价格（每60秒）</label>
-                <span id="last-update" style="font-size: 12px; color: #666;"></span>
             </div>
         </div>
 
         <label id="base-token-label" for="base-token-amount">池子中USDT的数量</label>
-        <div class="smart-input-container">
-            <input type="number" id="base-token-amount" placeholder="输入数量" oninput="updatePoolInfo()">
-            <button onclick="calculateBaseTokenAmount(10000)">1万U</button>
-            <button onclick="calculateBaseTokenAmount(100000)">10万U</button>
-            <button onclick="calculateBaseTokenAmount(1000000)">100万U</button>
+        <input type="number" id="base-token-amount" placeholder="输入数量" oninput="updatePoolInfo()">
+        <div class="quick-input">
+            <button onclick="calculateBaseTokenAmount(10000)">1万</button>
+            <button onclick="calculateBaseTokenAmount(100000)">10万</button>
+            <button onclick="calculateBaseTokenAmount(1000000)">100万</button>
+            <button onclick="calculateBaseTokenAmount(10000000)">1000万</button>
         </div>
         <div id="converted-value" class="converted-value"></div>
         
@@ -489,36 +473,24 @@
 
     function toggleBaseToken() {
         isEthBase = document.getElementById('base-token-switch').checked;
-        const ethPriceContainer = document.getElementById('eth-price-container');
+        const ethPriceSection = document.getElementById('eth-price-section');
         const baseTokenLabel = document.getElementById('base-token-label');
         const baseTokenInput = document.getElementById('base-token-amount');
         const convertedValue = document.getElementById('converted-value');
 
         if (isEthBase) {
-            ethPriceContainer.classList.add('show');
+            ethPriceSection.style.display = 'block';
             baseTokenLabel.textContent = '池子中ETH的数量';
             baseTokenInput.placeholder = '输入ETH的数量';
-            // 如果已有输入值，自动转换
-            const currentValue = parseFloat(baseTokenInput.value);
-            const ethPrice = parseFloat(document.getElementById('eth-price').value) || 0;
-            if (currentValue && ethPrice) {
-                const usdtValue = currentValue * ethPrice;
-                convertedValue.textContent = `≈ ${currentValue.toFixed(6)} ETH (${usdtValue.toLocaleString()} USDT)`;
-            }
-            // 自动获取一次价格
             fetchPrice();
         } else {
-            ethPriceContainer.classList.remove('show');
+            ethPriceSection.style.display = 'none';
             baseTokenLabel.textContent = '池子中USDT的数量';
             baseTokenInput.placeholder = '输入USDT的数量';
-            convertedValue.textContent = '';
-            // 清除自动更新
-            if (autoFetchInterval) {
-                clearInterval(autoFetchInterval);
-                document.getElementById('auto-fetch').checked = false;
-            }
         }
-
+        
+        // 更新快捷输入按钮显示
+        updateTradeButtons();
         updatePoolInfo();
     }
 
@@ -530,7 +502,23 @@
     }
 
     function quickFillTrade(amount) {
-        document.getElementById('trade-amount').value = amount;
+        if (isEthBase) {
+            // 如果是ETH模式，需要根据ETH价格换算
+            const ethPrice = parseFloat(document.getElementById('eth-price').value) || 0;
+            if (ethPrice <= 0) {
+                document.getElementById('error').textContent = '请先输入有效的ETH价格';
+                return;
+            }
+            // 将USDT金额转换为ETH数量
+            const ethAmount = amount / ethPrice;
+            document.getElementById('trade-amount').value = ethAmount.toFixed(6);
+            // 可以添加一个提示显示等值关系
+            document.getElementById('error').textContent = 
+                `≈ ${ethAmount.toFixed(6)} ETH (${amount.toLocaleString()} USDT)`;
+        } else {
+            // USDT模式直接使用金额
+            document.getElementById('trade-amount').value = amount;
+        }
         calculatePrice();
     }
 
@@ -647,15 +635,22 @@
         // 计算价格变化量（滑点）
         priceChange = ((priceAfterTrade - priceBeforeTrade) / priceBeforeTrade) * 100;
 
-        // 计算实际获得的代币数量或USDT数量
-        let tokenReceived, baseTokenPaid;
+        // 获取ETH价格（如果是ETH模式）
+        const ethPrice = isEthBase ? (parseFloat(document.getElementById('eth-price').value) || 0) : 1;
+
+        // 计算实际获得的代币数量或ETH数量
+        let tokenReceived, baseTokenPaid, usdValue;
         
         if (tradeType === 'buy') {
             tokenReceived = tokenAmount - newTokenAmount;
             baseTokenPaid = tradeAmount;
+            // 如果是ETH模式，计算USD价值
+            usdValue = isEthBase ? baseTokenPaid * ethPrice : baseTokenPaid;
         } else {
             tokenReceived = tradeAmount;
             baseTokenPaid = baseTokenAmount - newBaseTokenAmount;
+            // 如果是ETH模式，计算USD价值
+            usdValue = isEthBase ? baseTokenPaid * ethPrice : baseTokenPaid;
         }
 
         // 计算交易前后的总流动性
@@ -674,6 +669,33 @@
         // 价格影响（市场价格的变化）
         const priceImpact = ((priceAfterTrade - priceBeforeTrade) / priceBeforeTrade) * 100;
 
+        // 更新交易详情显示
+        const tradeDetailsHtml = tradeType === 'buy' ? `
+            <div class="result-item">
+                <span class="result-label">支付${isEthBase ? 'ETH' : 'USDT'}</span>
+                <span class="result-value">
+                    ${baseTokenPaid.toFixed(6)} ${isEthBase ? 'ETH' : 'USDT'}
+                    ${isEthBase ? `<br><small>≈ $${usdValue.toFixed(2)}</small>` : ''}
+                </span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">获得代币</span>
+                <span class="result-value">${tokenReceived.toFixed(6)}</span>
+            </div>
+        ` : `
+            <div class="result-item">
+                <span class="result-label">支付代币</span>
+                <span class="result-value">${tokenReceived.toFixed(6)}</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">获得${isEthBase ? 'ETH' : 'USDT'}</span>
+                <span class="result-value">
+                    ${baseTokenPaid.toFixed(6)} ${isEthBase ? 'ETH' : 'USDT'}
+                    ${isEthBase ? `<br><small>≈ $${usdValue.toFixed(2)}</small>` : ''}
+                </span>
+            </div>
+        `;
+
         // 更新结果显示
         document.getElementById('result').innerHTML = `
             <h3>交易预览</h3>
@@ -683,15 +705,24 @@
                 <div class="group-title">价格信息</div>
                 <div class="result-item">
                     <span class="result-label">当前价格</span>
-                    <span class="result-value highlight-value">${expectedPrice.toFixed(6)} USDT</span>
+                    <span class="result-value highlight-value">
+                        ${expectedPrice.toFixed(6)} ${isEthBase ? 'ETH' : 'USDT'}
+                        ${isEthBase ? `<br><small>≈ $${(expectedPrice * ethPrice).toFixed(2)}</small>` : ''}
+                    </span>
                 </div>
                 <div class="result-item">
                     <span class="result-label">实际成交价</span>
-                    <span class="result-value">${executionPrice.toFixed(6)} USDT</span>
+                    <span class="result-value">
+                        ${executionPrice.toFixed(6)} ${isEthBase ? 'ETH' : 'USDT'}
+                        ${isEthBase ? `<br><small>≈ $${(executionPrice * ethPrice).toFixed(2)}</small>` : ''}
+                    </span>
                 </div>
                 <div class="result-item">
                     <span class="result-label">交易后价格</span>
-                    <span class="result-value">${priceAfterTrade.toFixed(6)} USDT</span>
+                    <span class="result-value">
+                        ${priceAfterTrade.toFixed(6)} ${isEthBase ? 'ETH' : 'USDT'}
+                        ${isEthBase ? `<br><small>≈ $${(priceAfterTrade * ethPrice).toFixed(2)}</small>` : ''}
+                    </span>
                 </div>
             </div>
 
@@ -734,25 +765,7 @@
             <!-- 交易详情组 -->
             <div class="result-group">
                 <div class="group-title">交易详情</div>
-                ${tradeType === 'buy' ? `
-                    <div class="result-item">
-                        <span class="result-label">支付USDT</span>
-                        <span class="result-value">${baseTokenPaid.toFixed(2)} USDT</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">获得代币</span>
-                        <span class="result-value">${tokenReceived.toFixed(6)}</span>
-                    </div>
-                ` : `
-                    <div class="result-item">
-                        <span class="result-label">支付代币</span>
-                        <span class="result-value">${tokenReceived.toFixed(6)}</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">获得USDT</span>
-                        <span class="result-value">${baseTokenPaid.toFixed(2)} USDT</span>
-                    </div>
-                `}
+                ${tradeDetailsHtml}
             </div>
         `;
     }
@@ -767,11 +780,13 @@
             const ethPrice = parseFloat(data[0].price);
             
             document.getElementById('eth-price').value = ethPrice.toFixed(2);
+            
+            // 更新快捷输入按钮
+            updateTradeButtons();
+            updatePoolInfo();
+            
             loadingSpan.textContent = '更新成功';
             document.getElementById('last-update').textContent = `上次更新: ${new Date().toLocaleTimeString()}`;
-            
-            // 如果有输入值，更新换算结果
-            updatePoolInfo();
             
             setTimeout(() => {
                 loadingSpan.textContent = '';
@@ -804,6 +819,25 @@
             clearInterval(autoFetchInterval);
         }
     });
+
+    // 修改按钮显示的文本
+    function updateTradeButtons() {
+        const buttons = document.querySelectorAll('.quick-input button');
+        const values = [1000, 10000, 100000, 1000000];
+        const ethPrice = isEthBase ? (parseFloat(document.getElementById('eth-price').value) || 0) : 0;
+
+        buttons.forEach((button, index) => {
+            if (button.getAttribute('onclick')?.includes('quickFillTrade')) {
+                if (isEthBase && ethPrice > 0) {
+                    const ethAmount = (values[index] / ethPrice).toFixed(4);
+                    button.innerHTML = `${ethAmount} ETH<br><small>${values[index].toLocaleString()}U</small>`;
+                } else {
+                    button.textContent = values[index] >= 10000 ? 
+                        `${(values[index]/10000)}万` : values[index];
+                }
+            }
+        });
+    }
 </script>
 
 </body>
