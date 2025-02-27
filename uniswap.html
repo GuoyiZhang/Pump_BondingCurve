@@ -15,7 +15,6 @@
             font-family: 'Arial', sans-serif;
             background-color: #f8f9fa;
             padding: 40px 20px;
-            min-height: 100vh;
             margin: 0;
         }
 
@@ -24,7 +23,6 @@
             margin: 0 auto;
             display: flex;
             gap: 30px;
-            height: calc(100vh - 80px);
         }
 
         .input-section {
@@ -33,7 +31,6 @@
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
         }
 
         .result-section {
@@ -44,7 +41,6 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             position: sticky;
             top: 40px;
-            height: fit-content;
             font-size: 14px;
         }
 
@@ -243,10 +239,9 @@
 
         .switch-container {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-start;
+            justify-content: flex-start;
             margin-bottom: 20px;
-            gap: 15px;
         }
 
         .switch-label {
@@ -356,6 +351,46 @@
             font-size: 13px;
             color: #666;
         }
+
+        .base-token-selector {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .base-token-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .token-switch {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+        }
+
+        .token-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .switch {
+            width: 56px;
+            height: 28px;
+        }
+
+        .slider:before {
+            height: 20px;
+            width: 20px;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(28px);
+        }
     </style>
 </head>
 <body>
@@ -365,12 +400,17 @@
         <h1>Uniswap 价格计算器</h1>
 
         <div class="switch-container">
-            <span class="switch-label">USDT</span>
-            <label class="switch">
-                <input type="checkbox" id="base-token-switch" onchange="toggleBaseToken()">
-                <span class="slider"></span>
-            </label>
-            <span class="switch-label">ETH</span>
+            <div class="base-token-selector">
+                <div class="base-token-label">选择基础货币 (token0)</div>
+                <div class="token-switch">
+                    <span class="token-name">USDT</span>
+                    <label class="switch">
+                        <input type="checkbox" id="base-token-switch" onchange="toggleBaseToken()">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="token-name">ETH</span>
+                </div>
+            </div>
         </div>
 
         <div id="eth-price-section" style="display: none;">
