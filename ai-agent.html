@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>AI Agent 课件 — 从概念到区块链落地</title>
+<style>
+/* ===========================================
+   v6 设计系统 — 干净 / 高级 / 科技
+   原则：克制配色 · 充足留白 · 精致细节 · 不浮夸
+   =========================================== */
+:root{
+  /* 背景：纯深色，不加花哨 */
+  --bg:#0a0e1f;
+  --bg-soft:#10152b;
+  /* 文字：高对比但不刺眼 */
+  --fg:#f5f7fc;
+  --fg-soft:#c8d0e0;
+  --muted:#7b86a3;
+  /* 强调：主蓝 + 次青，只用两色 */
+  --accent:#6b8cff;
+  --accent2:#3dd9eb;
+  --accent-soft:rgba(107,140,255,0.12);
+  /* 状态色：保留但少用 */
+  --warn:#fbbf24;
+  --ok:#34d399;
+  --danger:#f87171;
+  /* 卡片：浅半透明 + 细边框，不用 backdrop-filter（文字最清晰） */
+  --card-bg:rgba(255,255,255,0.035);
+  --card-bg-hover:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.08);
+  --border-hover:rgba(255,255,255,0.16);
+  /* 圆角：统一两档 */
+  --r-md:14px;
+  --r-sm:10px;
+  /* 阴影：极克制 */
+  --shadow-sm:0 2px 8px rgba(0,0,0,0.2);
+  --shadow-md:0 8px 24px rgba(0,0,0,0.25);
+  /* 动效曲线：统一一条 */
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);
+  color:var(--fg);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  letter-spacing:-0.01em;
+}
+
+/* === 背景装饰：多个柔和光球，随鼠标视差移动（Kraft 风格）=== */
+.ambient{
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+}
+.ambient .orb{
+  position:absolute;border-radius:50%;
+  filter:blur(60px);
+  will-change:transform;
+  transition:transform 1.2s cubic-bezier(.22,1,.36,1);
+}
+.ambient .orb1{
+  width:680px;height:680px;
+  background:radial-gradient(circle,rgba(107,140,255,0.22) 0%,transparent 65%);
+  top:-180px;left:-160px;
+  animation:drift1 28s ease-in-out infinite;
+}
+.ambient .orb2{
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(61,217,235,0.18) 0%,transparent 65%);
+  bottom:-200px;right:-180px;
+  animation:drift2 34s ease-in-out infinite;
+}
+.ambient .orb3{
+  width:520px;height:520px;
+  background:radial-gradient(circle,rgba(167,139,250,0.16) 0%,transparent 65%);
+  top:40%;left:55%;
+  animation:drift3 32s ease-in-out infinite;
+}
+.ambient .orb4{
+  width:440px;height:440px;
+  background:radial-gradient(circle,rgba(244,114,182,0.12) 0%,transparent 65%);
+  bottom:10%;left:8%;
+  animation:drift1 40s ease-in-out infinite reverse;
+}
+@keyframes drift1{
+  0%,100%{transform:translate(0,0)}
+  50%{transform:translate(30px,20px)}
+}
+@keyframes drift2{
+  0%,100%{transform:translate(0,0)}
+  50%{transform:translate(-25px,-15px)}
+}
+@keyframes drift3{
+  0%,100%{transform:translate(0,0)}
+  50%{transform:translate(20px,-25px)}
+}
+
+/* === Deck === */
+.deck{position:relative;width:100vw;height:100vh;overflow:hidden;z-index:1}
+
+/* === Slide 基础：充足留白，文字绝对清晰 === */
+.slide{
+  position:absolute;inset:0;
+  padding:56px 72px 64px;
+  display:none;flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  overflow-y:auto;overflow-x:hidden;
+}
+/* active 时居中：内容短则垂直居中，内容长则从顶部开始（justify-content 自然失效）*/
+.slide.active{display:flex;animation:pageIn .35s var(--ease)}
+.slide::-webkit-scrollbar{width:6px}
+.slide::-webkit-scrollbar-track{background:transparent}
+.slide::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px}
+.slide::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+
+/* slide-inner 撑满父容器宽度，内容自动水平居中 + 限制最大宽度 */
+.slide-inner{
+  width:100%;
+  max-width:1180px;
+  margin:auto;
+  display:flex;flex-direction:column;
+  justify-content:center;
+}
+@keyframes pageIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+/* === 元素错位渐入：克制 0.04s 间隔 === */
+.slide.active .card,
+.slide.active .layer,
+.slide.active .step,
+.slide.active .box,
+.slide.active .vs>div,
+.slide.active .warn-box,
+.slide.active .quote,
+.slide.active pre,
+.slide.active table,
+.slide.active .item{
+  animation:rise .5s var(--ease) both;
+}
+.slide.active .card:nth-child(2),
+.slide.active .item:nth-child(2){animation-delay:0.04s}
+.slide.active .card:nth-child(3),
+.slide.active .item:nth-child(3){animation-delay:0.08s}
+.slide.active .card:nth-child(4),
+.slide.active .item:nth-child(4){animation-delay:0.12s}
+.slide.active .card:nth-child(5){animation-delay:0.16s}
+.slide.active .card:nth-child(6){animation-delay:0.20s}
+.slide.active .layer:nth-child(2){animation-delay:0.04s}
+.slide.active .layer:nth-child(3){animation-delay:0.08s}
+.slide.active .layer:nth-child(4){animation-delay:0.12s}
+.slide.active .step:nth-child(3){animation-delay:0.06s}
+.slide.active .step:nth-child(4){animation-delay:0.12s}
+.slide.active .step:nth-child(5){animation-delay:0.18s}
+.slide.active .step:nth-child(6){animation-delay:0.24s}
+.slide.active .step:nth-child(7){animation-delay:0.30s}
+@keyframes rise{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:none}
+}
+
+/* === 标题：字重分层，不发光 === */
+.slide h1{
+  font-size:46px;line-height:1.15;font-weight:700;letter-spacing:-0.025em;
+  margin-bottom:16px;
+}
+.slide h2{
+  font-size:32px;line-height:1.2;font-weight:600;letter-spacing:-0.02em;
+  color:var(--fg);
+  margin-bottom:20px;
+  padding-bottom:14px;
+  border-bottom:1px solid var(--border);
+}
+.slide h3{
+  font-size:18px;font-weight:600;letter-spacing:-0.01em;
+  color:var(--accent);
+  margin:16px 0 10px;
+}
+.slide p{
+  font-size:17px;line-height:1.7;color:var(--fg-soft);
+  margin-bottom:10px;
+}
+.slide ul,.slide ol{margin:8px 0 16px 4px}
+.slide li{
+  font-size:16px;line-height:1.8;color:var(--fg-soft);
+  margin-left:22px;
+}
+.slide li::marker{color:var(--accent)}
+.lead{font-size:19px;color:var(--fg-soft);line-height:1.65}
+.small{font-size:13px;color:var(--muted)}
+.kicker{
+  font-size:12px;color:var(--accent);letter-spacing:0.18em;
+  text-transform:uppercase;font-weight:600;
+  margin-bottom:14px;
+}
+
+/* === 网格 === */
+.grid{display:grid;gap:14px;margin-top:12px;align-content:start}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+
+/* === 卡片：浅半透明 + 细边框，hover 仅抬升 2px === */
+.card{
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:18px 20px;
+  display:flex;flex-direction:column;
+  transition:transform .4s var(--ease),background .4s,border-color .4s;
+}
+.card>*:last-child{margin-bottom:0}
+.card h3{margin-top:0}
+.card h3{margin-top:0}
+.card p{font-size:14px;color:var(--muted);line-height:1.65}
+.card:hover{
+  transform:translateY(-2px);
+  background:var(--card-bg-hover);
+  border-color:var(--border-hover);
+}
+
+/* === 流程图 === */
+.flow{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin:16px 0}
+.flow .step{
+  flex:1;min-width:120px;
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  padding:14px 16px;
+  text-align:center;
+  transition:all .3s var(--ease);
+}
+.flow .step b{display:block;color:var(--accent);font-size:14px;font-weight:600;margin-bottom:4px}
+.flow .step span{font-size:12px;color:var(--muted)}
+.flow .step:hover{border-color:var(--border-hover);background:var(--card-bg-hover)}
+.flow .arrow{display:flex;align-items:center;color:var(--accent);opacity:0.5;font-size:18px}
+
+/* === 层级架构 === */
+.arch{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.arch .layer{
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  padding:14px 18px;
+  display:flex;align-items:center;gap:16px;
+  transition:all .3s var(--ease);
+}
+.arch .layer b{color:var(--accent);min-width:120px;font-size:14px;font-weight:600}
+.arch .layer span{color:var(--fg-soft);font-size:14px}
+.arch .layer:hover{border-color:var(--border-hover);background:var(--card-bg-hover)}
+
+/* === 对比框 === */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:14px 0;
+  border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden}
+.vs>div{padding:18px 22px}
+.vs .l{background:rgba(248,113,113,0.05);border-right:1px solid var(--border)}
+.vs .r{background:rgba(52,211,153,0.05)}
+.vs h4{font-size:14px;font-weight:600;margin-bottom:8px;letter-spacing:-0.01em}
+.vs .l h4{color:var(--danger)}
+.vs .r h4{color:var(--ok)}
+.vs p{font-size:13px;color:var(--muted);line-height:1.7;margin:0}
+
+/* === 引用 / 警告 === */
+.quote{
+  border-left:2px solid var(--accent);
+  padding:12px 20px;
+  background:var(--accent-soft);
+  border-radius:0 var(--r-sm) var(--r-sm) 0;
+  margin:14px 0;
+}
+.quote p{font-size:15px;color:var(--fg-soft);font-style:normal;line-height:1.7;margin:0}
+
+.warn-box{
+  border:1px solid rgba(251,191,36,0.25);
+  background:rgba(251,191,36,0.06);
+  border-radius:var(--r-sm);
+  padding:14px 20px;
+  margin:12px 0;
+}
+.warn-box b{color:var(--warn);font-weight:600}
+.warn-box p,.warn-box{font-size:14px;color:var(--fg-soft);line-height:1.7}
+
+/* === 表格：紧凑专业 === */
+table{
+  width:100%;border-collapse:separate;border-spacing:0;
+  margin:12px 0;font-size:14px;
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  overflow:hidden;
+}
+th,td{padding:12px 16px;text-align:left;vertical-align:top}
+th{
+  color:var(--accent);font-weight:600;font-size:13px;
+  letter-spacing:0.02em;
+  background:rgba(107,140,255,0.08);
+  border-bottom:1px solid var(--border);
+}
+td{color:var(--fg-soft);border-bottom:1px solid rgba(255,255,255,0.05);line-height:1.6}
+tr:last-child td{border-bottom:none}
+
+/* === 代码块：纯净深色，无光标无闪烁 === */
+pre{
+  background:#060a18;
+  border:1px solid var(--border);
+  border-radius:var(--r-md);
+  padding:16px 18px;
+  overflow-x:auto;max-width:100%;
+  font-size:12px;line-height:1.65;
+  margin:12px 0;
+}
+code{font-family:"SF Mono",Menlo,Monaco,Consolas,monospace}
+pre code{color:var(--fg-soft);display:block}
+.ic{color:var(--accent2)}
+.ik{color:var(--warn)}
+.is{color:#f9a8d4}
+.in{color:#c4b5fd}
+
+/* === 双栏 === */
+.cols{display:flex;gap:24px;margin:14px 0;align-items:stretch}
+.cols>*{flex:1;min-width:0;overflow:hidden}
+.cols>*>*:last-child{margin-bottom:0}
+.item{display:flex;flex-direction:column;justify-content:center}
+
+/* === 标签 / 徽章 === */
+.tag{
+  display:inline-block;
+  padding:4px 11px;
+  border-radius:999px;
+  font-size:12px;font-weight:500;
+  background:var(--accent-soft);
+  color:var(--accent);
+  border:1px solid rgba(107,140,255,0.2);
+  margin-right:6px;
+  transition:all .3s var(--ease);
+}
+.tag:hover{background:rgba(107,140,255,0.18)}
+.badge{
+  display:inline-block;
+  padding:3px 10px;
+  border-radius:6px;
+  font-size:12px;font-weight:600;
+  background:rgba(107,140,255,0.15);
+  color:var(--accent);
+  border:1px solid rgba(107,140,255,0.25);
+}
+.badge.green{background:rgba(52,211,153,0.12);color:var(--ok);border-color:rgba(52,211,153,0.25)}
+.badge.amber{background:rgba(251,191,36,0.12);color:var(--warn);border-color:rgba(251,191,36,0.25)}
+
+/* === 大数字 === */
+.big-stat{
+  display:block;
+  font-size:48px;font-weight:700;letter-spacing:-0.03em;
+  color:var(--fg);
+  margin-bottom:4px;
+}
+.stat-label{font-size:13px;color:var(--muted);line-height:1.5}
+
+/* === 键帽 === */
+.kbd{
+  display:inline-block;
+  padding:2px 7px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid var(--border);
+  border-radius:5px;
+  font-size:12px;
+  font-family:"SF Mono",Menlo,monospace;
+  color:var(--fg-soft);
+}
+
+/* === 封面 === */
+.cover{justify-content:center}
+.cover h1{
+  font-size:64px;font-weight:700;letter-spacing:-0.035em;line-height:1.1;
+  background:linear-gradient(135deg,#ffffff 0%,#a8b5e8 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  margin-bottom:20px;
+}
+.cover .sub{font-size:22px;color:var(--muted);font-weight:400;margin-bottom:32px}
+.cover .meta{font-size:14px;color:var(--muted);line-height:1.8}
+
+/* === 章节封面 === */
+.section-cover{justify-content:center}
+.section-cover .kicker{font-size:13px;letter-spacing:0.22em;margin-bottom:20px}
+.section-cover h1{
+  font-size:56px;font-weight:700;letter-spacing:-0.03em;line-height:1.15;
+  background:linear-gradient(135deg,#ffffff 0%,#8a9cd6 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  margin-bottom:18px;
+}
+.section-cover .bar{
+  width:48px;height:2px;
+  background:var(--accent);
+  border-radius:1px;
+  margin-bottom:20px;
+}
+.section-cover .desc{font-size:18px;color:var(--muted);max-width:560px;line-height:1.6}
+
+/* === 浮层（顶部进度条 / 控制栏 / 页码 / TOC）— 唯一用毛玻璃的地方 === */
+.progress{
+  position:fixed;top:0;left:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  z-index:50;transition:width .4s var(--ease);
+}
+
+.controls{
+  position:fixed;bottom:20px;right:24px;
+  display:flex;gap:6px;z-index:50;
+  padding:5px;
+  background:rgba(10,14,31,0.7);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border:1px solid var(--border);
+  border-radius:999px;
+  box-shadow:var(--shadow-md);
+}
+.btn{
+  background:transparent;
+  border:none;
+  color:var(--fg-soft);
+  padding:7px 14px;
+  border-radius:999px;
+  cursor:pointer;
+  font-size:13px;font-weight:500;
+  font-family:inherit;
+  transition:all .25s var(--ease);
+}
+.btn:hover{background:rgba(255,255,255,0.08);color:var(--fg)}
+.btn:active{transform:scale(0.96)}
+
+.pageno{
+  position:fixed;bottom:20px;left:24px;z-index:50;
+  padding:6px 14px;
+  background:rgba(10,14,31,0.7);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border:1px solid var(--border);
+  border-radius:999px;
+  color:var(--muted);
+  font-size:12px;font-family:"SF Mono",Menlo,monospace;
+  box-shadow:var(--shadow-sm);
+}
+
+.toc{
+  position:fixed;inset:0;z-index:60;
+  background:rgba(10,14,31,0.85);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  display:none;
+  overflow:auto;
+  padding:56px 72px;
+  /* 居中：flex 列方向 + 水平垂直居中 */
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+.toc.open{display:flex;animation:pageIn .3s var(--ease)}
+.toc h2{
+  font-size:24px;font-weight:600;color:var(--fg);
+  border:none;padding:0;margin:0 0 24px;letter-spacing:-0.02em;
+  text-align:center;
+}
+.toc ol{
+  list-style:none;counter-reset:t;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:4px 16px;
+  width:100%;
+  max-width:1100px;
+}
+.toc li{
+  counter-increment:t;
+  padding:8px 12px;
+  font-size:13px;color:var(--fg-soft);
+  border-radius:var(--r-sm);
+  cursor:pointer;
+  transition:all .2s var(--ease);
+  line-height:1.4;
+}
+.toc li::before{
+  content:counter(t) ".  ";
+  color:var(--accent);font-weight:600;
+  font-variant-numeric:tabular-nums;
+}
+.toc li:hover{background:var(--accent-soft);color:var(--fg)}
+.toc li.section{
+  grid-column:1 / -1;
+  counter-increment:none;
+  color:var(--accent);
+  font-weight:600;
+  font-size:14px;letter-spacing:0.08em;text-transform:uppercase;
+  margin-top:18px;cursor:default;
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  border-radius:0;
+}
+.toc li.section:first-child{margin-top:0}
+.toc li.section:hover{background:transparent}
+.toc li.section::before{content:"";display:none}
+</style>
+</head>
+<body>
+<div class="ambient" id="ambient">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+</div>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck"></div>
+<div class="pageno" id="pageno"></div>
+<div class="controls">
+  <button class="btn" onclick="toggleToc()">大纲</button>
+  <button class="btn" onclick="prev()">‹</button>
+  <button class="btn" onclick="next()">›</button>
+  <button class="btn" onclick="fullscreen()">⤢</button>
+</div>
+<div class="toc" id="toc" onclick="if(event.target===this)toggleToc()">
+  <h2>课件大纲</h2>
+  <ol id="tocList"></ol>
+</div>
+<script>
+const slides = [
+/* ===== 封面 + 第一章 ===== */
+{type:'cover', html:`
+  <div class="kicker">Tech Talk · 2026</div>
+  <h1>AI Agent 课件<br/>市场机会与商业布局</h1>
+  <div class="sub">什么是 AI Agent · 架构如何设计 · 商业赛道全景与公司布局</div>
+  <div class="meta">
+    <span class="badge">01</span> 概念与架构 &nbsp;·&nbsp;
+    <span class="badge">02</span> 能力地图 &nbsp;·&nbsp;
+    <span class="badge">03</span> 商业赛道 &nbsp;·&nbsp;
+    <span class="badge">04</span> 落地路径 &nbsp;·&nbsp;
+    <span class="badge">05</span> Q&amp;A
+    <br/><br/>
+    <span class="kbd">→</span> / <span class="kbd">Space</span> 下一页 &nbsp;·&nbsp;
+    <span class="kbd">←</span> 上一页 &nbsp;·&nbsp;
+    <span class="kbd">T</span> 大纲 &nbsp;·&nbsp;
+    <span class="kbd">F</span> 全屏
+  </div>
+`},
+
+{type:'section', title:'第一章 · 什么是 AI Agent', sub:'FROM CHATBOT TO AUTONOMOUS AGENT', desc:'用"AI 实习生 Alex 第一天上班"的故事，一次讲清 LLM / Tools / Agent / RAG / MCP / Skill 六个核心概念', html:`<div class="kicker">FROM CHATBOT TO AUTONOMOUS AGENT</div><h1>第一章 · 什么是 AI Agent</h1><div class="bar"></div><div class="desc">用"AI 实习生 Alex 第一天上班"的故事，一次讲清 LLM / Tools / Agent / RAG / MCP / Skill 六个核心概念</div>`},
+
+/* --- 故事开场 --- */
+{type:'content', html:`
+  <h2>📖 故事开场 + 三个核心概念</h2>
+  <p class="lead">把 6 个概念装进"AI 实习生 Alex 第一天上班"的故事里，一次记住。</p>
+  <div class="card" style="margin-top:14px;padding:14px 18px">
+    <p style="font-size:14px;line-height:1.75;margin:0;color:var(--fg-soft)">
+    🏥 主任说"看一下 0xABC 这个地址"，Alex 脑子聪明但<b style="color:var(--accent)">什么业务都不懂</b>。
+    只要他有了下面这 6 样装备，就能变成能独立完成任务的<b style="color:var(--accent)">智能员工</b>。
+    <span style="color:var(--muted)">隐喻：🧠 大脑 · 🔧 手 · 🤖 自己干 · 📚 书架 · 🌐 工具商城 · 📋 手册</span>
+    </p>
+  </div>
+  <div class="grid g3" style="margin-top:14px;gap:14px">
+    <div class="card" style="padding:20px 22px">
+      <div style="font-size:40px;margin-bottom:10px">🧠</div>
+      <h3 style="margin:0 0 6px;font-size:16px">LLM 大模型</h3>
+      <p style="font-size:13px;color:var(--fg-soft);margin:0 0 8px;line-height:1.7">GPT-5 / Claude 4 / Qwen3<br/>Alex 的大脑<br/>会推理但本身不能行动</p>
+      <p style="font-size:12px;color:var(--accent);margin:0;line-height:1.6">海量文本训练的神经网络<br/>Agent 的决策大脑</p>
+    </div>
+    <div class="card" style="padding:20px 22px">
+      <div style="font-size:40px;margin-bottom:10px">🔧</div>
+      <h3 style="margin:0 0 6px;font-size:16px">Tools 工具</h3>
+      <p style="font-size:13px;color:var(--fg-soft);margin:0 0 8px;line-height:1.7">read_file / call_rpc / sql_query<br/>Alex 的手<br/>从"会说"到"会干"</p>
+      <p style="font-size:12px;color:var(--accent);margin:0;line-height:1.6">被动函数，模型生成参数<br/>框架执行 → 结果回灌</p>
+    </div>
+    <div class="card" style="padding:20px 22px">
+      <div style="font-size:40px;margin-bottom:10px">🤖</div>
+      <h3 style="margin:0 0 6px;font-size:16px">Agent 智能体</h3>
+      <p style="font-size:13px;color:var(--fg-soft);margin:0 0 8px;line-height:1.7">会自己干活的 Alex<br/>规划→调工具→观察→反思<br/>再来的循环</p>
+      <p style="font-size:12px;color:var(--accent);margin:0;line-height:1.6">LLM + Memory + Tools + Loop<br/>多步逼近目标</p>
+    </div>
+  </div>
+`},
+
+{type:'content', html:`
+  <h2>另外三个核心概念 + 组装公式</h2>
+  <div class="grid g3" style="margin-top:14px;gap:14px">
+    <div class="card" style="padding:20px 22px">
+      <div style="font-size:40px;margin-bottom:10px">📚</div>
+      <h3 style="margin:0 0 6px;font-size:16px">RAG 检索增强</h3>
+      <p style="font-size:13px;color:var(--fg-soft);margin:0 0 8px;line-height:1.7">Alex 的查阅书架<br/>先从知识库召回相关片段再生成</p>
+      <p style="font-size:12px;color:var(--accent);margin:0;line-height:1.6">解决"训练后事实过期"<br/>常见：MEMORY.md / 向量库</p>
+    </div>
+    <div class="card" style="padding:20px 22px">
+      <div style="font-size:40px;margin-bottom:10px">🌐</div>
+      <h3 style="margin:0 0 6px;font-size:16px">MCP 协议</h3>
+      <p style="font-size:13px;color:var(--fg-soft);margin:0 0 8px;line-height:1.7">Alex 的工具商城<br/>"USB-C for AI"<br/>Server 暴露工具即插即用</p>
+      <p style="font-size:12px;color:var(--accent);margin:0;line-height:1.6">已有数百个 MCP Server<br/>GitHub / Jira / Slack / Postgres</p>
+    </div>
+    <div class="card" style="padding:20px 22px">
+      <div style="font-size:40px;margin-bottom:10px">📋</div>
+      <h3 style="margin:0 0 6px;font-size:16px">Skill 技能</h3>
+      <p style="font-size:13px;color:var(--fg-soft);margin:0 0 8px;line-height:1.7">Alex 的操作手册<br/>把"老员工经验"沉淀成可复用流程</p>
+      <p style="font-size:12px;color:var(--accent);margin:0;line-height:1.6">流程 + 提示词 + 工具组合 + 经验记忆</p>
+    </div>
+  </div>
+  <div class="arch" style="margin-top:18px">
+    <div class="layer" style="background:rgba(107,140,255,0.08);border-color:rgba(107,140,255,0.2)"><b style="min-width:auto">🤖 Agent</b><span>规划 → 调工具 → 观察 → 反思 → 再来，直到完成</span></div>
+    <div class="layer"><b style="min-width:auto">├─ 🧠 LLM</b><span>大脑：思考下一步该做什么</span></div>
+    <div class="layer"><b style="min-width:auto">├─ 🔧 Tools + 🌐 MCP</b><span>手 + USB-C 接口：让工具标准化、可插拔</span></div>
+    <div class="layer"><b style="min-width:auto">├─ 📚 RAG</b><span>书架：查资料，避免凭脑子瞎说</span></div>
+    <div class="layer"><b style="min-width:auto">└─ 📋 Skill</b><span>手册：把流程沉淀下来，越做越熟练</span></div>
+  </div>
+  <div class="warn-box" style="margin-top:14px"><b>组装公式：</b> <code style="color:var(--accent);font-size:14px">Agent = LLM + Tools + Memory + Loop</code> · MCP 让 Tools 标准化 · RAG 喂知识 · Skill 喂流程</div>
+`},
+{type:'section', title:'第二章 · Agent 能力地图', sub:'CAPABILITY LANDSCAPE', desc:'架构 + 执行循环 + 形态 + 框架选型 + 工具与记忆', html:`<div class="kicker">CAPABILITY LANDSCAPE</div><h1>第二章 · Agent 能力地图</h1><div class="bar"></div><div class="desc">架构 + 执行循环 + 形态 + 框架选型 + 工具与记忆</div>`},
+{type:'content', html:`
+  <h2>什么是 AI Agent · vs Chatbot</h2>
+  <p class="lead">一个能够<b style="color:var(--accent)">感知环境、自主决策、调用工具、执行任务</b>，并基于反馈持续迭代的智能体。</p>
+  <div class="quote" style="margin-top:14px"><p>"An AI Agent is a system that pursues a goal over multiple steps by maintaining state, choosing actions, and observing outcomes." —— Lilian Weng, OpenAI</p></div>
+  <div class="grid g3" style="margin-top:18px;gap:14px">
+    <div class="card" style="padding:18px 20px"><h3 style="margin:0 0 8px;font-size:15px">🧠 自主 (Autonomy)</h3><p style="font-size:13px;line-height:1.7;margin:0">不需要人逐步指令<br/>自己规划步骤<br/>自己决定调用什么工具</p></div>
+    <div class="card" style="padding:18px 20px"><h3 style="margin:0 0 8px;font-size:15px">🔧 工具使用 (Tool Use)</h3><p style="font-size:13px;line-height:1.7;margin:0">能调用 API / 数据库<br/>代码解释器 / 链上 RPC<br/>把 LLM 装上"手"</p></div>
+    <div class="card" style="padding:18px 20px"><h3 style="margin:0 0 8px;font-size:15px">🔁 闭环 (Feedback Loop)</h3><p style="font-size:13px;line-height:1.7;margin:0">观察结果 → 修正方案<br/>再次执行 → 反思<br/>直到任务完成</p></div>
+  </div>
+  <table style="margin-top:18px">
+    <tr><th>维度</th><th>Chatbot / LLM 单独</th><th>AI Agent</th></tr>
+    <tr><td>交互模式</td><td>单轮问答</td><td>多步任务、长程规划</td></tr>
+    <tr><td>状态</td><td>无状态 / 短期上下文</td><td>记忆 + 工作区 + 任务列表</td></tr>
+    <tr><td>能力边界</td><td>语言生成</td><td>语言 + 工具调用 + 外部行动</td></tr>
+    <tr><td>错误处理</td><td>依赖用户重新提问</td><td>自我反思、重试、修复</td></tr>
+    <tr><td>典型例子</td><td>ChatGPT 问答</td><td>Cursor / Devin / 某 AI Coding 工具</td></tr>
+  </table>
+`},
+
+{type:'content', html:`
+  <h2>Agent 的核心架构 + 执行循环</h2>
+  <div class="cols" style="margin-top:14px">
+    <div>
+      <h3>5 个组件</h3>
+      <div class="arch" style="margin:8px 0">
+        <div class="layer"><b>🎯 规划</b><span>Planner：拆解目标</span></div>
+        <div class="layer"><b>🧠 LLM</b><span>决策大脑</span></div>
+        <div class="layer"><b>💾 记忆</b><span>短期对话 + 长期向量库</span></div>
+        <div class="layer"><b>🔧 工具</b><span>API / MCP / 解释器</span></div>
+        <div class="layer"><b>🔁 循环</b><span>Act → Observe → Reflect</span></div>
+      </div>
+      <div class="quote" style="margin:8px 0"><p>"Agent = LLM + Memory + Tools + Loop。把 LLM 当 CPU，Memory 当 RAM，Tools 当外设，Loop 当时钟。"</p></div>
+    </div>
+    <div>
+      <h3>ReAct 范式（边想边干）</h3>
+      <pre style="margin:0;font-size:11px"><code><span class="ik">Thought</span>: 查 0xABC 在 BSC 的持仓
+<span class="ic">Action</span>: call_rpc(<span class="is">"bsc"</span>, <span class="is">"eth_getBalance"</span>, ...)
+<span class="in">Observation</span>: 约 2 BNB
+<span class="ik">Thought</span>: 再查 LP 仓位
+<span class="ic">Action</span>: call_contract(...)
+<span class="in">Observation</span>: { tick:-100, liq:1e18 }
+<span class="ik">Thought</span>: 信息够了
+<span class="ic">Final Answer</span>: 地址持有 2 BNB，并在 PancakeSwap V4 池...</code></pre>
+      <div class="warn-box" style="margin-top:10px;padding:10px 14px"><b>关键：</b> 不是一次性生成答案，而是"边想边干边看"。每步 Observation 进入下一轮上下文。</div>
+    </div>
+  </div>
+`},
+
+{type:'content', html:`
+  <h2>Agent 形态 + 框架选型</h2>
+  <div class="grid g3" style="margin-top:14px;gap:12px">
+    <div class="card" style="padding:18px 20px"><h3 style="margin:0 0 8px;font-size:15px">① 单 Agent 单轮</h3><p style="font-size:13px;line-height:1.7;margin:0 0 8px">一个 LLM + 几个工具<br/>一轮完成</p><p style="font-size:12px;color:var(--accent);margin:0">例：翻译、SQL 生成</p></div>
+    <div class="card" style="padding:18px 20px"><h3 style="margin:0 0 8px;font-size:15px">② 单 Agent 多步</h3><p style="font-size:13px;line-height:1.7;margin:0 0 8px">自主规划多步<br/>维护 TODO 列表<br/>当前主流形态</p><p style="font-size:12px;color:var(--accent);margin:0">例：Cursor / 调研 Agent</p></div>
+    <div class="card" style="padding:18px 20px"><h3 style="margin:0 0 8px;font-size:15px">③ 多 Agent 协作</h3><p style="font-size:13px;line-height:1.7;margin:0 0 8px">多角色分工<br/>Orchestrator 编排<br/>复杂任务专用</p><p style="font-size:12px;color:var(--accent);margin:0">例：MetaGPT、CrewAI、Devin</p></div>
+  </div>
+  <table style="margin-top:18px">
+    <tr><th>框架</th><th>特点</th><th>适合场景</th><th>成本</th></tr>
+    <tr><td>LangGraph</td><td>图结构编排，状态机清晰，可中断/回溯</td><td>需要精确控制流程的生产系统</td><td>中</td></tr>
+    <tr><td>OpenAI Agents SDK</td><td>官方出品，Handoff 机制简单</td><td>快速原型、ChatGPT 生态</td><td>低</td></tr>
+    <tr><td>CrewAI</td><td>角色化 Agent，"团队"概念直观</td><td>多角色协作类任务</td><td>低</td></tr>
+    <tr><td>AutoGen</td><td>微软出品，对话式多 Agent</td><td>研究、讨论型任务</td><td>中</td></tr>
+    <tr><td>裸写 (LLM + 工具)</td><td>直接用 SDK + while 循环</td><td>定制化、最小依赖</td><td>看团队</td></tr>
+  </table>
+  <div class="quote" style="margin-top:14px"><p>选型建议：80% 场景用"裸写 + MCP 工具"即可。需要复杂流程再上 LangGraph，需要多人协作再上 CrewAI。框架是手段，不是目的。</p></div>
+`},
+
+{type:'content', html:`
+  <h2>Agent 的"手"与"脑"—— 工具 / 记忆 / MCP</h2>
+  <div class="grid g2" style="margin-top:14px;gap:12px">
+    <div class="card" style="padding:14px 16px">
+      <h3 style="margin:0 0 6px;font-size:14px">🔧 MCP (Model Context Protocol)</h3>
+      <p style="font-size:12px;line-height:1.7;margin:0">Anthropic 2024 推出的开放协议，类比"USB-C for AI"<br/>Server 暴露工具，Client (任意模型) 即插即用<br/>已有数百个 MCP Server：GitHub / Jira / Slack / Postgres<br/>解决"每个项目都重写工具集成"的痛点</p>
+    </div>
+    <div class="card" style="padding:14px 16px">
+      <h3 style="margin:0 0 6px;font-size:14px">💾 规划与记忆</h3>
+      <p style="font-size:12px;line-height:1.7;margin:0"><b>规划</b>：Plan-and-Execute / ReAct / Tree of Thoughts / Reflection<br/><b>短期记忆</b>：当前会话上下文 / 工作区文件<br/><b>长期记忆</b>：向量库召回历史经验<br/><b>组织级</b>：组织知识库 / 项目约定 / 文档中心</p>
+    </div>
+  </div>
+  <pre style="margin-top:14px;font-size:11px"><code><span class="ik">// MCP Server 暴露一个工具</span>
+server.tool(<span class="is">"get_token_balance"</span>, {
+  chain: z.enum([<span class="is">"bsc"</span>, <span class="is">"eth"</span>, <span class="is">"base"</span>]),
+  address: z.string().regex(<span class="is">/^0x[a-fA-F0-9]{40}$/</span>)
+}, <span class="ik">async</span> ({chain, address}) =&gt; {
+  <span class="ik">const</span> bal = <span class="ik">await</span> rpc.getBalance(chain, address);
+  <span class="ik">return</span> { content: [{ type:<span class="is">"text"</span>, text:<span class="is">'Balance: ' + bal + ' ETH'</span> }] };
+});</code></pre>
+  <div class="warn-box" style="margin-top:12px"><b>实战经验：</b> 记忆比规划更重要。Agent 出错绝大多数是因为"忘了关键约束"，而不是"想错了"。用组织知识库持久化用户偏好与项目约定，能把 Agent 稳定性从 70% 拉到 95%。</div>
+`},
+{type:'section', title:'第三章 · AI Agent 商业赛道全景', sub:'MARKET LANDSCAPE · 8 SECTORS · 11 PRODUCTS', desc:'不局限区块链 —— 八大赛道 11 个产品 · 平台 / 垂直 / 工具三层布局 · 飞轮效应', html:`<div class="kicker">MARKET LANDSCAPE · 8 SECTORS · 11 PRODUCTS</div><h1>第三章 · AI Agent 商业赛道全景</h1><div class="bar"></div><div class="desc">八大赛道 11 个产品 · 平台/垂直/工具三层布局 · 飞轮效应</div>`},
+
+{type:'content', html:`
+  <h2>AI Agent 的市场全景与赛道机会</h2>
+  <p class="lead">AI Agent 不只是区块链 —— 它是下一代人机交互范式，正在重塑每个行业。</p>
+  <div class="grid g4" style="margin-top:14px;gap:10px">
+    <div class="card" style="padding:16px 14px;text-align:center">
+      <div style="font-size:32px;font-weight:700;color:var(--accent);letter-spacing:-0.03em">$200B</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">2030 全球 AI Agent 市场</div>
+    </div>
+    <div class="card" style="padding:16px 14px;text-align:center">
+      <div style="font-size:32px;font-weight:700;color:var(--accent);letter-spacing:-0.03em">45%</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">年复合增长率 CAGR</div>
+    </div>
+    <div class="card" style="padding:16px 14px;text-align:center">
+      <div style="font-size:32px;font-weight:700;color:var(--accent);letter-spacing:-0.03em">8</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">主要商业赛道</div>
+    </div>
+    <div class="card" style="padding:16px 14px;text-align:center">
+      <div style="font-size:32px;font-weight:700;color:var(--accent);letter-spacing:-0.03em">3 层</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">平台 / 垂直 / 工具</div>
+    </div>
+  </div>
+  <h3 style="margin-top:18px;margin-bottom:10px">八大商业赛道</h3>
+  <div class="grid g4" style="gap:10px">
+    <div class="card" style="padding:12px 14px"><h3 style="margin:0 0 4px;font-size:13px">💼 企业服务</h3><p style="font-size:11px;margin:0;color:var(--muted)">客服 / 销售 / 数据分析 / 编码</p></div>
+    <div class="card" style="padding:12px 14px"><h3 style="margin:0 0 4px;font-size:13px">🏠 消费生活</h3><p style="font-size:11px;margin:0;color:var(--muted)">购物 / 旅行 / 助理 / 内容</p></div>
+    <div class="card" style="padding:12px 14px"><h3 style="margin:0 0 4px;font-size:13px">🎓 教育学习</h3><p style="font-size:11px;margin:0;color:var(--muted)">家教 / 留学 / 职业培训</p></div>
+    <div class="card" style="padding:12px 14px"><h3 style="margin:0 0 4px;font-size:13px">🏥 医疗健康</h3><p style="font-size:11px;margin:0;color:var(--muted)">分诊 / 健康管理 / 心理</p></div>
+    <div class="card" style="padding:12px 14px"><h3 style="margin:0 0 4px;font-size:13px">💰 金融财富</h3><p style="font-size:11px;margin:0;color:var(--muted)">投顾 / 保险 / 信贷 / 风控</p></div>
+    <div class="card" style="padding:12px 14px"><h3 style="margin:0 0 4px;font-size:13px">🔗 Web3 / 区块链</h3><p style="font-size:11px;margin:0;color:var(--muted)">钱包 / 交易 / 风控 / 投顾</p></div>
+    <div class="card" style="padding:12px 14px"><h3 style="margin:0 0 4px;font-size:13px">🏭 产业制造</h3><p style="font-size:11px;margin:0;color:var(--muted)">供应链 / 质检 / 设备运维</p></div>
+    <div class="card" style="padding:12px 14px"><h3 style="margin:0 0 4px;font-size:13px">🎨 创意内容</h3><p style="font-size:11px;margin:0;color:var(--muted)">设计 / 视频 / 营销 / 写作</p></div>
+  </div>
+  <div class="quote" style="margin-top:18px"><p>机会窗口：现在所有行业都还在用"上一代 SaaS"思路做"AI 包装"，真正用 Agent 重构业务流的平台公司还没出现 —— 这就是窗口期。</p></div>
+`},
+
+{type:'content', html:`
+  <h2>三层商业布局 · 平台 / 垂直 / 工具</h2>
+  <p class="lead">大公司不能只做单点产品 —— 要有平台、有垂直、有工具，形成生态护城河。</p>
+  <div class="arch" style="margin-top:18px">
+    <div class="layer" style="background:rgba(107,140,255,0.08);border-color:rgba(107,140,255,0.2)"><b style="min-width:140px">🏢 平台层</b><span>Agent OS · 统一入口 · 跨场景记忆 · 第三方插件生态 —— 像移动互联网时代的 iOS/Android</span></div>
+    <div class="layer"><b style="min-width:140px">🎯 垂直层</b><span>面向具体行业的端到端 Agent：金融投顾、医疗分诊、教育家教、Web3 钱包 —— 高客单价 + 高留存</span></div>
+    <div class="layer"><b style="min-width:140px">🔧 工具层</b><span>单点高频工具：交易解释、合同审查、翻译、代码补全 —— 免费获客、做流量入口</span></div>
+  </div>
+  <div class="grid g3" style="margin-top:18px;gap:14px">
+    <div class="card" style="padding:18px 20px">
+      <h3 style="margin:0 0 10px;font-size:15px">💼 平台层价值</h3>
+      <p style="font-size:13px;line-height:1.85;margin:0">锁定用户身份与记忆<br/>抽佣第三方 30%<br/>估值天花板 <b style="color:var(--accent)">$100B+</b></p>
+    </div>
+    <div class="card" style="padding:18px 20px">
+      <h3 style="margin:0 0 10px;font-size:15px">🎯 垂直层价值</h3>
+      <p style="font-size:13px;line-height:1.85;margin:0">单客户高 LTV <b style="color:var(--accent)">$1K+/年</b><br/>行业数据壁垒深<br/>容易被平台收购</p>
+    </div>
+    <div class="card" style="padding:18px 20px">
+      <h3 style="margin:0 0 10px;font-size:15px">🔧 工具层价值</h3>
+      <p style="font-size:13px;line-height:1.85;margin:0">低获客成本<br/>海量用户行为数据<br/>反哺平台训练</p>
+    </div>
+  </div>
+  <div class="warn-box" style="margin-top:14px"><b>大公司布局策略：</b> 工具层做流量入口 → 垂直层做营收 → 平台层做估值。三层联动形成飞轮：用户越多→数据越多→Agent 越强→用户越离不开。</div>
+`},
+
+{type:'content', html:`
+  <h2>11 个产品矩阵 · 跨赛道商业布局</h2>
+  <p class="small" style="margin-bottom:12px">不局限区块链 —— 围绕企业服务、消费、金融、Web3、教育、医疗六大赛道布局</p>
+  <div class="grid g2" style="gap:12px">
+    <div class="item" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span class="badge green">01</span>
+        <b style="font-size:15px;color:var(--fg)">企业 AI 客服 Agent</b>
+        <span style="margin-left:auto;font-size:11px;color:var(--ok)">★ 平台流量</span>
+      </div>
+      <p style="font-size:13px;margin:0;color:var(--muted)">替代 Zendesk/Intercom：自动处理工单 + 对接业务系统 + 7×24 不下班的客服团队</p>
+    </div>
+    <div class="item" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span class="badge green">02</span>
+        <b style="font-size:15px;color:var(--fg)">销售线索 Agent</b>
+        <span style="margin-left:auto;font-size:11px;color:var(--ok)">★ B2B 现金牛</span>
+      </div>
+      <p style="font-size:13px;margin:0;color:var(--muted)">自动触达 + 跟进 + 谈判辅助 + CRM 录入。按成交抽佣 5-10%，对标 Outreach</p>
+    </div>
+    <div class="item" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span class="badge">03</span>
+        <b style="font-size:15px;color:var(--fg)">个人 AI 助理 (Copilot)</b>
+        <span style="margin-left:auto;font-size:11px;color:var(--warn)">★ 终极入口</span>
+      </div>
+      <p style="font-size:13px;margin:0;color:var(--muted)">日历 + 邮件 + 文档 + 任务的全能助理，订阅 $20/月，对标 ChatGPT 但跨应用</p>
+    </div>
+    <div class="item" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span class="badge">04</span>
+        <b style="font-size:15px;color:var(--fg)">金融智能投顾</b>
+      </div>
+      <p style="font-size:13px;margin:0;color:var(--muted)">"我有 10 万想理财" → 资产配置 + 自动调仓 + 税务优化。AUM 0.5-1% 年化管理费</p>
+    </div>
+    <div class="item" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span class="badge">05</span>
+        <b style="font-size:15px;color:var(--fg)">医疗分诊 & 健康管理</b>
+      </div>
+      <p style="font-size:13px;margin:0;color:var(--muted)">症状自查 + 挂号 + 用药提醒 + 慢病管理。B 端医院/保险采购 + C 端订阅</p>
+    </div>
+    <div class="item" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span class="badge">06</span>
+        <b style="font-size:15px;color:var(--fg)">AI 家教 / 学习教练</b>
+      </div>
+      <p style="font-size:13px;margin:0;color:var(--muted)">K12 到职业培训的 1 对 1 AI 老师，$29/月，对标 Khan Academy 但全学科</p>
+    </div>
+    <div class="item" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span class="badge">07</span>
+        <b style="font-size:15px;color:var(--fg)">Web3 智能钱包助手</b>
+        <span style="margin-left:auto;font-size:11px;color:var(--ok)">★ 区块链旗舰</span>
+      </div>
+      <p style="font-size:13px;margin:0;color:var(--muted)">一句话完成链上操作 + 签名前风险检测 + 跨链 + 防钓鱼。Pro $9.9/月 + 执行抽佣</p>
+    </div>
+    <div class="item" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span class="badge">08</span>
+        <b style="font-size:15px;color:var(--fg)">智能合同审查</b>
+      </div>
+      <p style="font-size:13px;margin:0;color:var(--muted)">法务 Agent 自动审合同 + 找风险条款 + 标注修改建议。按合同 $99/份，律师对接分成</p>
+    </div>
+    <div class="item" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span class="badge">09</span>
+        <b style="font-size:15px;color:var(--fg)">AI 营销内容 Agent</b>
+      </div>
+      <p style="font-size:13px;margin:0;color:var(--muted)">自动产出文案 + 视频 + 投放优化 + 数据复盘。订阅 $99/月 + 投放抽佣</p>
+    </div>
+    <div class="item" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 18px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span class="badge">10</span>
+        <b style="font-size:15px;color:var(--fg)">供应链调度 Agent</b>
+      </div>
+      <p style="font-size:13px;margin:0;color:var(--muted)">采购 + 物流 + 库存 + 预测一体化。B 端企业按 GMV 抽佣 0.05%，对标 SAP 但 AI 原生</p>
+    </div>
+    <div class="item" style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:13px 16px;grid-column:1 / -1;background:rgba(107,140,255,0.08);border-color:rgba(107,140,255,0.2)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span class="badge" style="background:linear-gradient(120deg,rgba(251,191,36,0.85),rgba(244,114,182,0.85));color:#0a0e1f">11</span>
+        <b style="font-size:15px;color:var(--fg)">Agent OS · 统一平台</b>
+        <span style="margin-left:auto;font-size:11px;color:var(--warn)">★ $100B 终极</span>
+      </div>
+      <p style="font-size:13px;margin:0;color:var(--muted)">所有产品背后的统一平台：跨场景记忆 + 第三方插件生态 + 开发者分成。对标 AI 时代的 iOS ——估值天花板</p>
+    </div>
+  </div>
+`},
+
+{type:'content', html:`
+  <h2>三层布局的飞轮效应</h2>
+  <p class="lead">平台 / 垂直 / 工具三层不是堆叠，而是互相强化的飞轮。</p>
+  <div class="grid g2" style="margin-top:18px;gap:14px">
+    <div class="card">
+      <h3 style="margin-top:0">🔄 飞轮逻辑</h3>
+      <div class="arch" style="margin:10px 0">
+        <div class="layer"><b>① 工具</b><span>免费高频获客 → 海量用户行为</span></div>
+        <div class="layer"><b>② 垂直</b><span>高价值用户转付费 → 高 LTV 营收</span></div>
+        <div class="layer"><b>③ 平台</b><span>跨场景记忆锁定 → 用户难迁移</span></div>
+        <div class="layer"><b>④ 生态</b><span>第三方插件 → 开发者分成 30%</span></div>
+        <div class="layer"><b>⑤ 数据</b><span>反哺训练 → Agent 越强 → 用户越多</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">📊 估值逻辑</h3>
+      <table style="margin:8px 0;background:transparent;border:none">
+        <tr><th style="background:transparent;border:none;color:var(--muted);font-size:12px">层</th><th style="background:transparent;border:none;color:var(--muted);font-size:12px">估值倍数</th><th style="background:transparent;border:none;color:var(--muted);font-size:12px">对标公司</th></tr>
+        <tr><td>工具</td><td>5-10x PS</td><td>Grammarly / Notion</td></tr>
+        <tr><td>垂直</td><td>10-20x PS</td><td>Datadog / HubSpot</td></tr>
+        <tr><td>平台</td><td>20-40x PS</td><td>Shopify / Snowflake</td></tr>
+        <tr><td>OS 生态</td><td>40x+ PS</td><td>Apple / Microsoft</td></tr>
+      </table>
+      <p style="font-size:11px;color:var(--muted);margin:0">PS = Price-to-Sales，市销率</p>
+    </div>
+  </div>
+  <div class="quote" style="margin-top:14px"><p>关键洞察：单点产品天花板在 $1-10B，平台公司天花板在 $100B+。我们要做的不是"做一个好产品"，而是"做产品的产品"。</p></div>
+`},
+
+{type:'content', html:`
+  <h2>为什么不局限单赛道 · 跨赛道协同</h2>
+  <p class="lead">单一赛道容易被巨头碾过，跨赛道共享记忆与身份才能形成壁垒。</p>
+  <div class="grid g2" style="margin-top:18px;gap:14px">
+    <div class="card">
+      <h3 style="margin-top:0">❌ 单赛道困境</h3>
+      <p style="font-size:13px;line-height:1.8;margin:0">
+        只做 Web3 → 币圈熊市营收腰斩<br/>
+        只做企业服务 → 微软/Google 一旦发力就碾压<br/>
+        只做消费 → 用户留存难、获客成本飙升<br/>
+        只做金融 → 合规成本高、牌照壁垒厚但增速慢
+      </p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">✅ 跨赛道协同</h3>
+      <p style="font-size:13px;line-height:1.8;margin:0">
+        同一用户身份：商务人士白天用客服 Agent，晚上用投资 Agent<br/>
+        同一记忆：知道你是 CFO，所有产品都懂你的偏好<br/>
+        同一技术栈：MCP 工具 / 记忆 / 规划一次投入，多赛道复用<br/>
+        同一营收池：B 端 + C 端 + 平台抽佣，风险对冲
+      </p>
+    </div>
+  </div>
+  <h3 style="margin-top:18px">具体协同案例</h3>
+  <ul>
+    <li><b>身份打通</b>：你用我们的客服 Agent 处理工单 → 我们懂你公司业务 → 营销 Agent 自动帮你写文案 → 投顾 Agent 帮你管营收</li>
+    <li><b>记忆打通</b>：医疗 Agent 知道你有高血压 → 健康提醒 → 食谱推荐 → 运动计划 → 保险 Agent 给你定制方案</li>
+    <li><b>数据打通</b>：Web3 钱包助手知道你风险偏好 → 跨赛道给你推荐合适的产品 → 投顾 Agent 直接服务</li>
+  </ul>
+  <div class="warn-box" style="margin-top:14px"><b>平台公司的本质：</b>不是"做了多少产品"，而是"用户在我们的生态里能完成多少事"。用户离开 = 失去全部记忆与身份 —— 这才是真壁垒。</div>
+`},
+
+{type:'content', html:`
+  <h2>竞争格局 · 巨头 vs 创业公司的差异化</h2>
+  <p class="lead">不和巨头正面打 —— 找到它们看不见或不愿做的位置。</p>
+  <table style="margin-top:14px">
+    <tr><th>玩家</th><th>优势</th><th>劣势</th><th>我们的差异化</th></tr>
+    <tr><td><b>OpenAI / Anthropic</b></td><td>模型能力天花板<br/>ChatGPT 用户基数</td><td>不做垂直深耕<br/>不碰金融/Web3 合规</td><td>用它们的模型做底座<br/>做它们不愿做的垂直</td></tr>
+    <tr><td><b>Google / Microsoft</b></td><td>办公场景绑定<br/>云 + AI 一体化</td><td>创新慢、内部博弈<br/>不做 Web3</td><td>跨平台中立<br/>AI 原生而非改造</td></tr>
+    <tr><td><b>字节 / 阿里 / 腾讯</b></td><td>用户流量<br/>国内生态</td><td>海外市场弱<br/>创新被 KPI 牵制</td><td>海外优先<br/>跨场景记忆而非单点</td></tr>
+    <tr><td><b>Cursor / Devin / Perplexity</b></td><td>单点做透<br/>先发品牌</td><td>只覆盖单场景<br/>无跨赛道能力</td><td>多场景平台<br/>共享身份与记忆</td></tr>
+    <tr><td><b>传统 SaaS</b></td><td>付费用户基数<br/>企业销售团队</td><td>AI 是包装非原生<br/>架构老旧</td><td>AI 原生重构业务流<br/>Agent 调用而非表单</td></tr>
+  </table>
+  <div class="quote" style="margin-top:14px"><p>关键洞察：巨头做模型、创业公司做单点、传统 SaaS 做包装 —— 真正的空位是"跨场景记忆 + 行业垂直深耕"的平台公司，还没人占。</p></div>
+`},
+
+{type:'content', html:`
+  <h2>旗舰产品详解 · 三个标杆案例</h2>
+  <p class="lead">从 11 个产品里挑 3 个旗舰重点讲透 —— 它们定义公司形象。</p>
+  <div class="grid g3" style="margin-top:14px;gap:12px">
+    <div class="card" style="padding:18px 20px">
+      <h3 style="margin:0 0 8px;font-size:15px">💼 企业 AI 客服</h3>
+      <p style="font-size:12px;line-height:1.7;margin:0 0 8px"><b>痛点</b>：Zendesk 单工单 $12，效率低<br/><b>方案</b>：Agent 自动处理 70% 工单 + 对接业务系统<br/><b>技术</b>：RAG 检索知识库 + MCP 调用业务 API</p>
+      <p style="font-size:12px;color:var(--accent);margin:0"><b>收费</b>：$0.5/工单 · 仅为 Zendesk 4%<br/><b>指标</b>：客单价 $1K/月 · 留存 95%</p>
+    </div>
+    <div class="card" style="padding:18px 20px">
+      <h3 style="margin:0 0 8px;font-size:15px">🔗 Web3 智能钱包</h3>
+      <p style="font-size:12px;line-height:1.7;margin:0 0 8px"><b>痛点</b>：用户怕钓鱼、看不懂签名<br/><b>方案</b>：签名前 AI 解释 + 实时拦截 + 自然语言操作<br/><b>技术</b>：交易 trace 解码 + 风险地址库 + 多链 RPC</p>
+      <p style="font-size:12px;color:var(--accent);margin:0"><b>收费</b>：Pro $9.9/月 + 执行 0.2%<br/><b>指标</b>：MAU 50 万 · ARPU $7 · 留存 80%</p>
+    </div>
+    <div class="card" style="padding:18px 20px">
+      <h3 style="margin:0 0 8px;font-size:15px">✨ 个人 Copilot</h3>
+      <p style="font-size:12px;line-height:1.7;margin:0 0 8px"><b>痛点</b>：ChatGPT 只会聊天不调应用<br/><b>方案</b>：跨应用记忆 + 调日历/邮件/文档/任务<br/><b>技术</b>：MCP 调用 100+ 应用 API + 长期记忆</p>
+      <p style="font-size:12px;color:var(--accent);margin:0"><b>收费</b>：$20/月订阅<br/><b>指标</b>：对标 ChatGPT Plus · 留存目标 70%+</p>
+    </div>
+  </div>
+  <div class="warn-box" style="margin-top:14px"><b>战略意义：</b> 这 3 个旗舰分属企业/Web3/消费三大赛道，互不重叠却共享同一 Agent OS —— 这是平台公司的"三脚架"，分散风险 + 互相印证。</div>
+`},
+
+{type:'content', html:`
+  <h2>商业模式对比 · 4 种赚钱方式</h2>
+  <p class="lead">不同模式适用不同产品 —— 选错模式产品就死。</p>
+  <table style="margin-top:14px">
+    <tr><th>模式</th><th>适用产品</th><th>优点</th><th>缺点</th><th>代表公司</th></tr>
+    <tr><td><b>SaaS 订阅</b></td><td>Copilot / 投顾 / 家教</td><td>收入可预测<br/>留存数据清晰</td><td>获客成本高<br/>免费用户难转化</td><td>ChatGPT Plus / Notion</td></tr>
+    <tr><td><b>交易抽佣</b></td><td>钱包 / 跟单 / 跨链</td><td>与用户利益绑定<br/>天花板高</td><td>依赖交易量<br/>熊市营收腰斩</td><td>Stripe / Coinbase</td></tr>
+    <tr><td><b>按次付费</b></td><td>客服 / 合同审查 / 营销</td><td>B 端易接受<br/>用多少付多少</td><td>难预测收入<br/>单次毛利低</td><td>OpenAI API / AWS</td></tr>
+    <tr><td><b>分成模式</b></td><td>销售 Agent / 跟单 / 投顾</td><td>与客户利益绑定<br/>客单价高</td><td>计费复杂<br/>争议多</td><td>Outreach / eToro</td></tr>
+  </table>
+  <h3 style="margin-top:18px">组合策略 · 三段式变现</h3>
+  <div class="grid g3" style="gap:12px">
+    <div class="card" style="padding:16px 18px">
+      <h3 style="margin:0 0 6px;font-size:14px">🚀 获客阶段</h3>
+      <p style="font-size:12px;line-height:1.7;margin:0">免费工具吸引用户<br/>按次付费试水<br/>低门槛 + 高传播</p>
+    </div>
+    <div class="card" style="padding:16px 18px">
+      <h3 style="margin:0 0 6px;font-size:14px">💎 转化阶段</h3>
+      <p style="font-size:12px;line-height:1.7;margin:0">订阅解锁高级功能<br/>交易抽佣 + 分成<br/>验证付费意愿</p>
+    </div>
+    <div class="card" style="padding:16px 18px">
+      <h3 style="margin:0 0 6px;font-size:14px">🏛️ 锁定阶段</h3>
+      <p style="font-size:12px;line-height:1.7;margin:0">平台抽佣第三方<br/>跨场景记忆难迁移<br/>长期 LTV 最大化</p>
+    </div>
+  </div>
+`},
+
+{type:'content', html:`
+  <h2>单元经济模型 · 商业可行性证明</h2>
+  <p class="lead">讲故事不如算账 —— 算清楚每个用户能赚多少钱。</p>
+  <div class="grid g2" style="margin-top:14px;gap:14px">
+    <div class="card" style="padding:18px 20px">
+      <h3 style="margin:0 0 10px;font-size:15px">📊 单用户经济 (LTV/CAC)</h3>
+      <div class="arch" style="margin:8px 0">
+        <div class="layer"><b>CAC</b><span>$20 (免费工具获客均摊)</span></div>
+        <div class="layer"><b>ARPU/月</b><span>$7 (Pro 订阅 + 抽佣均摊)</span></div>
+        <div class="layer"><b>毛利率</b><span>85% (AI API + 服务器成本约 15%)</span></div>
+        <div class="layer"><b>留存</b><span>月留存 80% (行业领先水平)</span></div>
+        <div class="layer"><b>LTV</b><span style="color:var(--accent)"><b>$35 × 12 个月 = $420</b></span></div>
+      </div>
+      <p style="font-size:13px;color:var(--accent);margin:10px 0 0"><b>LTV/CAC = 21x</b> · 远高于 SaaS 行业 3x 健康线</p>
+    </div>
+    <div class="card" style="padding:18px 20px">
+      <h3 style="margin:0 0 10px;font-size:15px">💰 回本与盈利预测</h3>
+      <div class="arch" style="margin:8px 0">
+        <div class="layer"><b>回本周期</b><span>3 个月 (CAC / 月毛利)</span></div>
+        <div class="layer"><b>1 万付费用户</b><span>ARR $420K · 毛利 $357K</span></div>
+        <div class="layer"><b>10 万付费用户</b><span>ARR $4.2M · 毛利 $3.5M</span></div>
+        <div class="layer"><b>100 万付费用户</b><span>ARR $42M · 毛利 $35M</span></div>
+        <div class="layer"><b>盈亏平衡</b><span style="color:var(--accent)"><b>~8 万付费用户</b></span></div>
+      </div>
+      <p style="font-size:13px;color:var(--accent);margin:10px 0 0"><b>盈亏平衡点合理</b> · 团队 30 人月成本约 $30 万</p>
+    </div>
+  </div>
+  <div class="quote" style="margin-top:14px"><p>关键洞察：AI Agent 产品的 LTV/CAC 显著高于传统 SaaS，因为 Agent 一旦融入用户工作流，迁移成本极高 —— 这是订阅模式最好的赛道之一。</p></div>
+`},
+
+{type:'section', title:'第四章 · 落地路径与商业风险', sub:'IMPLEMENTATION & RISKS', desc:'4 阶段路径 · 选场景标准 · 5 个常见坑 · 区块链产品红线', html:`<div class="kicker">IMPLEMENTATION & RISKS</div><h1>第四章 · 落地路径与商业风险</h1><div class="bar"></div><div class="desc">4 阶段路径 · 选场景标准 · 5 个常见坑 · 区块链产品红线</div>`},
+{type:'content', html:`
+  <h2>落地路径 + 常见坑 + 产品红线</h2>
+  <p class="lead">4 步走稳 + 5 个避坑 + 区块链场景红线 —— 一页讲清落地工程纪律。</p>
+  <div class="cols" style="margin-top:18px;gap:18px">
+    <div>
+      <h3 style="margin:0 0 10px;font-size:15px">🛣️ 4 阶段落地路径</h3>
+      <div class="arch" style="margin:0">
+        <div class="layer"><b style="min-width:90px;font-size:13px">① 单点</b><span style="font-size:12px">高频低风险 MVP，验证 PMF</span></div>
+        <div class="layer"><b style="min-width:90px;font-size:13px">② 工具化</b><span style="font-size:12px">封装成 MCP Server，即插即用</span></div>
+        <div class="layer"><b style="min-width:90px;font-size:13px">③ 编排</b><span style="font-size:12px">上框架 + 记忆，多 Agent 协作</span></div>
+        <div class="layer"><b style="min-width:90px;font-size:13px">④ 产品化</b><span style="font-size:12px">HITL + 可审计 + 成本控制</span></div>
+      </div>
+      <div class="warn-box" style="margin-top:12px;padding:10px 14px"><b>选场景 3 标准：</b> 高频痛点 · 用户愿付费 · 数据可获取<br/><b style="color:var(--danger)">反例：</b> 自动套利 Agent —— 高风险 + 牌照 + 无底座</div>
+    </div>
+    <div>
+      <h3 style="margin:0 0 10px;font-size:15px">⚠️ 5 个常见坑</h3>
+      <div class="card" style="padding:14px 16px;margin-bottom:10px">
+        <p style="font-size:12px;line-height:1.85;margin:0">
+        <b style="color:var(--danger)">① 幻觉</b> — 编造地址/ABI → 外部数据必须真实调用工具<br/>
+        <b style="color:var(--warn)">② 无限循环</b> — 烧 token → 步数上限 + 3 次失败告警<br/>
+        <b style="color:var(--warn)">③ 工具错误</b> — 参数错 → MCP schema + Zod 校验<br/>
+        <b style="color:var(--warn)">④ 成本失控</b> — 50 步烧几刀 → 分级模型 + 上下文压缩<br/>
+        <b style="color:var(--danger)">⑤ 安全越权</b> — 乱操作 → 默认只读 + 写操作 HITL
+        </p>
+      </div>
+      <h3 style="margin:0 0 10px;font-size:15px">🚫 区块链产品红线</h3>
+      <div class="card" style="padding:14px 16px">
+        <p style="font-size:12px;line-height:1.85;margin:0">
+        <b style="color:var(--danger)">不做</b>：自动下单/转账 · 保管私钥 · 幻觉给投资建议 · 绕过白名单<br/>
+        <b style="color:var(--ok)">应做</b>：数据查询/解读 · 风险提示/信号 · 报告生成 · 人工确认后执行 · 全链路审计
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="quote" style="margin-top:16px"><p>第一原则：<b>先不爆雷，再谈效率</b>。一次错误转账的损失，够养一个 Agent 团队半年 —— 区块链场景红线尤其严格，因为资产不可逆。</p></div>
+`},
+
+{type:'section', title:'第五章 · 商业布局与公司定位', sub:'SUMMARY & NEXT STEPS', desc:'核心结论 · 3 个月商业路径 · 公司定位与商业模式', html:`<div class="kicker">SUMMARY & NEXT STEPS</div><h1>第五章 · 总结与行动</h1><div class="bar"></div><div class="desc">核心结论 · 3 个月行动表 · 团队定位</div>`},
+{type:'content', html:`
+  <h2>核心结论 · 3 年商业路径 · 公司定位</h2>
+  <div class="grid g2" style="margin-top:12px;gap:12px">
+    <div class="card" style="padding:14px 18px">
+      <h3 style="margin:0 0 6px;font-size:14px">🧠 概念 + 架构</h3>
+      <p style="font-size:12px;line-height:1.7;margin:0">Agent = LLM + Memory + Tools + Loop<br/>规划 + 大脑 + 记忆 + 工具 + 循环<br/>MCP 让工具标准化，80% 场景用裸写</p>
+    </div>
+    <div class="card" style="padding:14px 18px">
+      <h3 style="margin:0 0 6px;font-size:14px">🌐 三层布局</h3>
+      <p style="font-size:12px;line-height:1.7;margin:0">平台层：Agent OS 统一入口<br/>垂直层：6 赛道 11 产品<br/>工具层：免费高频获客</p>
+    </div>
+  </div>
+  <table style="margin-top:14px">
+    <tr><th>阶段</th><th>时间</th><th>动作</th><th>商业指标</th></tr>
+    <tr><td>工具获客</td><td>Y1 H1</td><td>3 个免费工具（客服/交易解释/营销文案）+ 内测</td><td>10 万 DAU / 1M 调用量 / PMF 验证</td></tr>
+    <tr><td>垂直变现</td><td>Y1 H2</td><td>金融投顾 + 企业销售 + Web3 钱包上线订阅</td><td>10 万付费用户 / ARR $5M</td></tr>
+    <tr><td>平台飞轮</td><td>Y2</td><td>Agent OS Beta + 第三方插件生态 + MCP 工具市场</td><td>50 万 MAU / 100+ 插件 / MRR $2M</td></tr>
+    <tr><td>生态扩张</td><td>Y3</td><td>开发者大会 + 行业 OS (金融/医疗/教育) + IPO 准备</td><td>500 万 MAU / ARR $50M+ / 估值 $500M+</td></tr>
+  </table>
+  <div class="grid g3" style="margin-top:14px;gap:10px">
+    <div class="card" style="padding:12px 14px"><h3 style="margin:0 0 4px;font-size:13px">Y1 · 工具</h3><p style="font-size:11px;margin:0">免费获客 + 数据壁垒<br/>估值 $50M</p></div>
+    <div class="card" style="padding:12px 14px"><h3 style="margin:0 0 4px;font-size:13px">Y2 · 订阅+平台</h3><p style="font-size:11px;margin:0">垂直变现 + 平台抽佣<br/>估值 $200M</p></div>
+    <div class="card" style="padding:12px 14px"><h3 style="margin:0 0 4px;font-size:13px">Y3 · 生态 OS</h3><p style="font-size:11px;margin:0">开发者生态 + 行业 OS<br/>估值 $500M+ · IPO</p></div>
+  </div>
+  <div class="warn-box" style="margin-top:12px"><b>公司定位：</b> AI Agent 时代的平台公司 —— 不和 OpenAI 争模型，不和 Cursor 争工具，做"跨场景统一记忆 + 行业垂直深耕"的 Agent OS。短期靠垂直订阅赚钱，中期靠平台抽佣锁定，长期靠生态 OS 估值 $100B+。</div>
+`},
+
+
+];
+
+/* === 渲染引擎 === */
+const deck = document.getElementById('deck');
+const tocList = document.getElementById('tocList');
+const progress = document.getElementById('progress');
+const pageno = document.getElementById('pageno');
+let cur = 0;
+
+function render(){
+  deck.innerHTML = '';
+  slides.forEach((s, i) => {
+    const el = document.createElement('section');
+    el.className = 'slide' + (i === cur ? ' active' : '');
+    if(s.type === 'cover') el.classList.add('cover');
+    if(s.type === 'section') el.classList.add('section-cover');
+    // section 类型只有 title/sub/desc，没有 html，需要拼出 HTML
+    if(s.type === 'section' && !s.html){
+      el.innerHTML = '<div class="slide-inner"><div class="kicker">' + (s.sub || '') + '</div>'
+        + '<h1>' + s.title + '</h1>'
+        + '<div class="bar"></div>'
+        + '<div class="desc">' + (s.desc || '') + '</div></div>';
+    } else {
+      el.innerHTML = '<div class="slide-inner">' + s.html + '</div>';
+    }
+    deck.appendChild(el);
+  });
+  buildToc();
+  update();
+}
+
+function buildToc(){
+  tocList.innerHTML = '';
+  slides.forEach((s, i) => {
+    if(s.type === 'cover') return;   // 封面不进大纲
+    const li = document.createElement('li');
+    if(s.type === 'section'){
+      li.className = 'section';
+      li.textContent = s.title;
+    } else {
+      const h = (s.html.match(/<h2[^>]*>(.*?)<\/h2>/) || [,'(无标题)'])[1].replace(/<[^>]+>/g,'');
+      li.textContent = h;
+      li.onclick = () => { go(i); toggleToc(); };
+    }
+    tocList.appendChild(li);
+  });
+}
+
+function update(){
+  document.querySelectorAll('.slide').forEach((el, i) => {
+    el.classList.toggle('active', i === cur);
+  });
+  progress.style.width = ((cur + 1) / slides.length * 100) + '%';
+  pageno.textContent = String(cur + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+}
+
+function go(i){ cur = Math.max(0, Math.min(slides.length - 1, i)); update(); }
+function next(){ if(cur < slides.length - 1) cur++; update(); }
+function prev(){ if(cur > 0) cur--; update(); }
+function toggleToc(){ document.getElementById('toc').classList.toggle('open'); }
+function fullscreen(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+
+document.addEventListener('keydown', e => {
+  if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if(e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown'){ e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); prev(); }
+  else if(e.key === 'Home'){ go(0); }
+  else if(e.key === 'End'){ go(slides.length - 1); }
+  else if(e.key.toLowerCase() === 't'){ toggleToc(); }
+  else if(e.key.toLowerCase() === 'f'){ fullscreen(); }
+  else if(e.key === 'Escape'){ document.getElementById('toc').classList.remove('open'); }
+});
+
+document.addEventListener('click', e => {
+  if(e.target.closest('.controls') || e.target.closest('.toc')) return;
+  if(e.clientX > window.innerWidth / 2) next(); else prev();
+});
+
+render();
+
+/* === 鼠标视差：光球整体随鼠标微妙移动（不破坏单个光球的 drift 动画）=== */
+const ambient = document.getElementById('ambient');
+let targetX = 0, targetY = 0;
+let curX = 0, curY = 0;
+
+window.addEventListener('mousemove', e => {
+  targetX = (e.clientX / window.innerWidth - 0.5) * 2;
+  targetY = (e.clientY / window.innerHeight - 0.5) * 2;
+});
+
+function tickParallax(){
+  curX += (targetX - curX) * 0.05;
+  curY += (targetY - curY) * 0.05;
+  // 整体视差位移（30px 范围内），光球自身的 drift 动画保持不变
+  ambient.style.transform = 'translate(' + (curX * 30) + 'px,' + (curY * 30) + 'px)';
+  requestAnimationFrame(tickParallax);
+}
+tickParallax();
+
+/* === 单个光球也有微视差（不同强度模拟景深）=== */
+const orbs = document.querySelectorAll('.ambient .orb');
+let tX2 = 0, tY2 = 0, cX2 = 0, cY2 = 0;
+window.addEventListener('mousemove', e => {
+  tX2 = (e.clientX / window.innerWidth - 0.5) * 2;
+  tY2 = (e.clientY / window.innerHeight - 0.5) * 2;
+});
+function tickOrbParallax(){
+  cX2 += (tX2 - cX2) * 0.04;
+  cY2 += (tY2 - cY2) * 0.04;
+  // 注意：直接改 transform 会覆盖 animation，所以用 CSS 变量 + 动画里引用
+  // 但 keyframe 已经写死 translate，所以改为：用 translate3d 在 will-change 之外
+  // 更稳妥：让光球的父级 ambient 移动，单个光球只做 drift（上面已做）
+  requestAnimationFrame(tickOrbParallax);
+}
+// 不调 tickOrbParallax()，让单个光球保持 drift 动画，整体视差由 ambient 容器承担
+</script>
+</body>
+<!-- version: 2026-07-19 01:19:58 -->
+</html>
