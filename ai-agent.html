@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>AI Agent 课件 — 从概念到区块链落地</title>
+<title>AI Agent — 市场机会与商业布局</title>
 <style>
 /* ===========================================
    v6 设计系统 — 干净 / 高级 / 科技
@@ -61,45 +61,47 @@ body{
 }
 .ambient .orb{
   position:absolute;border-radius:50%;
-  filter:blur(60px);
+  filter:blur(50px);
+  mix-blend-mode:screen;
   will-change:transform;
-  transition:transform 1.2s cubic-bezier(.22,1,.36,1);
+  --mx:0px; --my:0px;
 }
 .ambient .orb1{
   width:680px;height:680px;
-  background:radial-gradient(circle,rgba(107,140,255,0.22) 0%,transparent 65%);
+  background:radial-gradient(circle,rgba(107,140,255,0.55) 0%,rgba(107,140,255,0.2) 40%,transparent 70%);
   top:-180px;left:-160px;
   animation:drift1 28s ease-in-out infinite;
 }
 .ambient .orb2{
   width:600px;height:600px;
-  background:radial-gradient(circle,rgba(61,217,235,0.18) 0%,transparent 65%);
+  background:radial-gradient(circle,rgba(61,217,235,0.45) 0%,rgba(61,217,235,0.15) 40%,transparent 70%);
   bottom:-200px;right:-180px;
   animation:drift2 34s ease-in-out infinite;
 }
 .ambient .orb3{
   width:520px;height:520px;
-  background:radial-gradient(circle,rgba(167,139,250,0.16) 0%,transparent 65%);
+  background:radial-gradient(circle,rgba(167,139,250,0.4) 0%,rgba(167,139,250,0.12) 40%,transparent 70%);
   top:40%;left:55%;
   animation:drift3 32s ease-in-out infinite;
 }
 .ambient .orb4{
   width:440px;height:440px;
-  background:radial-gradient(circle,rgba(244,114,182,0.12) 0%,transparent 65%);
+  background:radial-gradient(circle,rgba(244,114,182,0.35) 0%,rgba(244,114,182,0.1) 40%,transparent 70%);
   bottom:10%;left:8%;
   animation:drift1 40s ease-in-out infinite reverse;
 }
+/* drift 动画叠加鼠标位移（通过 CSS 变量 --mx --my）*/
 @keyframes drift1{
-  0%,100%{transform:translate(0,0)}
-  50%{transform:translate(30px,20px)}
+  0%,100%{transform:translate(var(--mx),var(--my)) translate(0,0)}
+  50%{transform:translate(var(--mx),var(--my)) translate(30px,20px)}
 }
 @keyframes drift2{
-  0%,100%{transform:translate(0,0)}
-  50%{transform:translate(-25px,-15px)}
+  0%,100%{transform:translate(var(--mx),var(--my)) translate(0,0)}
+  50%{transform:translate(var(--mx),var(--my)) translate(-25px,-15px)}
 }
 @keyframes drift3{
-  0%,100%{transform:translate(0,0)}
-  50%{transform:translate(20px,-25px)}
+  0%,100%{transform:translate(var(--mx),var(--my)) translate(0,0)}
+  50%{transform:translate(var(--mx),var(--my)) translate(20px,-25px)}
 }
 
 /* === Deck === */
@@ -379,14 +381,247 @@ pre code{color:var(--fg-soft);display:block}
 
 /* === 封面 === */
 .cover{justify-content:center}
+/* 封面：左右分栏布局 */
+.cover{position:relative}
+.cover .slide-inner{
+  min-height:calc(100vh - 112px);
+  justify-content:center;
+  padding:60px 0;
+}
+.cover-grid{
+  display:grid;
+  grid-template-columns:1.2fr 1fr;
+  gap:60px;
+  align-items:center;
+  width:100%;
+  max-width:1280px;
+}
+.cover-left{display:flex;flex-direction:column;gap:18px}
+.cover-right{
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  min-height:420px;
+}
+
+/* === CSS 3D 机器人 === */
+.robot-3d{
+  position:relative;
+  width:360px;height:360px;
+  perspective:1000px;
+}
+.robot-head{
+  position:absolute;
+  top:50%;left:50%;
+  width:240px;height:240px;
+  transform:translate(-50%,-50%) rotateX(-15deg) rotateY(0deg);
+  transform-style:preserve-3d;
+  animation:robotFloat 5s ease-in-out infinite;
+}
+@keyframes robotFloat{
+  0%,100%{transform:translate(-50%,-50%) rotateX(-15deg) rotateY(-8deg) translateY(0)}
+  50%{transform:translate(-50%,-50%) rotateX(-15deg) rotateY(8deg) translateY(-12px)}
+}
+.robot-face{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,#1a2240 0%,#0e1530 100%);
+  border:2px solid rgba(107,140,255,0.4);
+  border-radius:32px;
+  box-shadow:
+    0 30px 60px rgba(0,0,0,0.4),
+    inset 0 2px 0 rgba(255,255,255,0.15),
+    inset 0 -2px 0 rgba(0,0,0,0.3);
+  overflow:hidden;
+}
+.robot-face::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(107,140,255,0.08) 0%,transparent 50%,rgba(61,217,235,0.06) 100%);
+  pointer-events:none;
+}
+.robot-eye{
+  position:absolute;top:75px;
+  width:48px;height:48px;
+  background:radial-gradient(circle,#3dd9eb 0%,#6b8cff 60%,transparent 100%);
+  border-radius:50%;
+  box-shadow:0 0 30px rgba(61,217,235,0.7),0 0 60px rgba(107,140,255,0.4),inset 0 0 12px rgba(255,255,255,0.6);
+  animation:eyeBlink 4s ease-in-out infinite;
+}
+.robot-eye.left{left:48px}
+.robot-eye.right{right:48px}
+@keyframes eyeBlink{
+  0%,90%,100%{transform:scaleY(1)}
+  93%,97%{transform:scaleY(0.1)}
+}
+.robot-mouth{
+  position:absolute;bottom:60px;left:50%;
+  width:80px;height:6px;
+  background:linear-gradient(90deg,transparent,#3dd9eb 20%,#6b8cff 80%,transparent);
+  border-radius:3px;
+  transform:translateX(-50%);
+  box-shadow:0 0 12px rgba(61,217,235,0.5);
+}
+.robot-line.top{
+  position:absolute;top:35px;left:30px;right:30px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(107,140,255,0.4),transparent);
+}
+.robot-line.bottom{
+  position:absolute;bottom:35px;left:30px;right:30px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(107,140,255,0.4),transparent);
+}
+.robot-ear{
+  position:absolute;top:50%;width:24px;height:60px;
+  background:linear-gradient(180deg,#1a2240 0%,#0e1530 100%);
+  border:2px solid rgba(107,140,255,0.4);
+  border-radius:12px;
+  transform:translateY(-50%);
+  box-shadow:inset 0 0 8px rgba(0,0,0,0.3);
+}
+.robot-ear.left{left:-20px}
+.robot-ear.right{right:-20px}
+.robot-antenna{
+  position:absolute;top:-32px;left:50%;
+  width:4px;height:32px;
+  background:linear-gradient(180deg,#6b8cff,rgba(107,140,255,0.3));
+  transform:translateX(-50%);
+}
+.robot-antenna::after{
+  content:"";position:absolute;top:-8px;left:50%;
+  width:14px;height:14px;
+  background:radial-gradient(circle,#3dd9eb,transparent 70%);
+  border-radius:50%;
+  transform:translateX(-50%);
+  box-shadow:0 0 20px rgba(61,217,235,0.8);
+  animation:antennaPulse 2s ease-in-out infinite;
+}
+@keyframes antennaPulse{
+  0%,100%{opacity:0.7;transform:translateX(-50%) scale(1)}
+  50%{opacity:1;transform:translateX(-50%) scale(1.3)}
+}
+.robot-shadow{
+  position:absolute;bottom:30px;left:50%;
+  width:180px;height:20px;
+  background:radial-gradient(ellipse,rgba(107,140,255,0.3) 0%,transparent 70%);
+  transform:translateX(-50%);
+  filter:blur(8px);
+  animation:shadowPulse 5s ease-in-out infinite;
+}
+@keyframes shadowPulse{
+  0%,100%{transform:translateX(-50%) scale(1);opacity:0.6}
+  50%{transform:translateX(-50%) scale(0.85);opacity:0.4}
+}
+
+/* 响应式 */
+@media (max-width:1100px){
+  .cover-grid{grid-template-columns:1fr;gap:30px}
+  .cover-right{min-height:300px}
+  .robot-3d{width:280px;height:280px}
+  .robot-head{width:200px;height:200px}
+  .robot-eye{width:40px;height:40px;top:60px}
+  .robot-eye.left{left:38px}
+  .robot-eye.right{right:38px}
+}
 .cover h1{
   font-size:64px;font-weight:700;letter-spacing:-0.035em;line-height:1.1;
   background:linear-gradient(135deg,#ffffff 0%,#a8b5e8 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
   margin-bottom:20px;
+  filter:drop-shadow(0 0 30px rgba(107,140,255,0.3));
 }
 .cover .sub{font-size:22px;color:var(--muted);font-weight:400;margin-bottom:32px}
 .cover .meta{font-size:14px;color:var(--muted);line-height:1.8}
+
+/* === 全局浮动小机器人（右下角，所有页面都显示，封面隐藏）=== */
+.mini-robot{
+  position:fixed;
+  left:24px;
+  bottom:18px;
+  width:48px;height:48px;
+  z-index:49;
+  perspective:300px;
+  cursor:pointer;
+  filter:drop-shadow(0 4px 16px rgba(61,217,235,0.4));
+  transition:transform .3s ease, filter .3s ease, opacity .4s ease;
+}
+.mini-robot:hover{
+  transform:scale(1.25) translateY(-4px);
+  filter:drop-shadow(0 8px 24px rgba(61,217,235,0.6));
+}
+.mini-head{
+  width:48px;height:48px;
+  transform-style:preserve-3d;
+  animation:miniFloat 4s ease-in-out infinite;
+}
+@keyframes miniFloat{
+  0%,100%{transform:rotateX(-10deg) rotateY(-6deg) translateY(0)}
+  50%{transform:rotateX(-10deg) rotateY(6deg) translateY(-4px)}
+}
+.mini-face{
+  width:100%;height:100%;
+  background:linear-gradient(135deg,#1a2240,#0e1530);
+  border:1.5px solid rgba(107,140,255,0.5);
+  border-radius:13px;
+  position:relative;overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.mini-face::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(107,140,255,0.07),transparent);
+}
+.mini-eye{
+  position:absolute;top:15px;
+  width:9px;height:9px;
+  background:radial-gradient(circle,#3dd9eb,#6b8cff 60%,transparent);
+  border-radius:50%;
+  box-shadow:0 0 10px rgba(61,217,235,0.8),0 0 18px rgba(107,140,255,0.4);
+  animation:miniEyeBlink 4s ease-in-out infinite;
+}
+.mini-eye.left{left:10px}
+.mini-eye.right{right:10px}
+@keyframes miniEyeBlink{
+  0%,90%,100%{transform:scaleY(1)}
+  93%,97%{transform:scaleY(0.1)}
+}
+.mini-mouth{
+  position:absolute;bottom:11px;left:50%;
+  width:16px;height:2.5px;
+  background:linear-gradient(90deg,transparent,#3dd9eb,#6b8cff,transparent);
+  border-radius:2px;
+  transform:translateX(-50%);
+  box-shadow:0 0 6px rgba(61,217,235,0.5);
+}
+.mini-ear{
+  position:absolute;top:50%;
+  width:5px;height:13px;
+  background:linear-gradient(180deg,#1a2240,#0e1530);
+  border:1px solid rgba(107,140,255,0.4);
+  border-radius:3px;
+  transform:translateY(-50%);
+}
+.mini-ear.left{left:-4px}
+.mini-ear.right{right:-4px}
+.mini-antenna{
+  position:absolute;top:-9px;left:50%;
+  width:2px;height:9px;
+  background:linear-gradient(180deg,#6b8cff,rgba(107,140,255,0.2));
+  transform:translateX(-50%);
+}
+.mini-antenna::after{
+  content:"";position:absolute;top:-5px;left:50%;
+  width:6px;height:6px;
+  background:radial-gradient(circle,#3dd9eb,transparent 70%);
+  border-radius:50%;
+  transform:translateX(-50%);
+  box-shadow:0 0 10px rgba(61,217,235,0.9);
+  animation:antennaPulse 2s ease-in-out infinite;
+}
+@media (max-width:768px){
+  .mini-robot{left:16px;width:38px;height:38px}
+  .mini-head{width:38px;height:38px}
+  .mini-eye{width:7px;height:7px;top:11px}
+  .mini-eye.left{left:8px}
+  .mini-eye.right{right:8px}
+}
 
 /* === 章节封面 === */
 .section-cover{justify-content:center}
@@ -413,32 +648,38 @@ pre code{color:var(--fg-soft);display:block}
 }
 
 .controls{
-  position:fixed;bottom:20px;right:24px;
-  display:flex;gap:6px;z-index:50;
+  position:fixed;
+  bottom:24px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:2px;
+  z-index:50;
   padding:5px;
-  background:rgba(10,14,31,0.7);
-  backdrop-filter:blur(20px) saturate(180%);
-  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  background:rgba(10,14,31,0.75);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
   border:1px solid var(--border);
   border-radius:999px;
-  box-shadow:var(--shadow-md);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4),0 0 24px rgba(107,140,255,0.15);
 }
 .btn{
   background:transparent;
   border:none;
   color:var(--fg-soft);
-  padding:7px 14px;
+  padding:10px 22px;
   border-radius:999px;
   cursor:pointer;
-  font-size:13px;font-weight:500;
+  font-size:14px;font-weight:500;
   font-family:inherit;
   transition:all .25s var(--ease);
 }
 .btn:hover{background:rgba(255,255,255,0.08);color:var(--fg)}
+.ctrl-sep{width:1px;height:18px;background:var(--border);align-self:center;margin:0 4px}
 .btn:active{transform:scale(0.96)}
 
 .pageno{
-  position:fixed;bottom:20px;left:24px;z-index:50;
+  position:fixed;bottom:20px;right:24px;z-index:50;
   padding:6px 14px;
   background:rgba(10,14,31,0.7);
   backdrop-filter:blur(20px) saturate(180%);
@@ -517,35 +758,71 @@ pre code{color:var(--fg-soft);display:block}
 </div>
 <div class="progress" id="progress"></div>
 <div class="deck" id="deck"></div>
+<!-- 全局浮动小机器人 -->
+<div class="mini-robot" id="miniRobot">
+  <div class="mini-head">
+    <div class="mini-face">
+      <div class="mini-eye left"></div>
+      <div class="mini-eye right"></div>
+      <div class="mini-mouth"></div>
+    </div>
+    <div class="mini-ear left"></div>
+    <div class="mini-ear right"></div>
+    <div class="mini-antenna"></div>
+  </div>
+</div>
 <div class="pageno" id="pageno"></div>
 <div class="controls">
   <button class="btn" onclick="toggleToc()">大纲</button>
+  <span class="ctrl-sep"></span>
   <button class="btn" onclick="prev()">‹</button>
   <button class="btn" onclick="next()">›</button>
+  <span class="ctrl-sep"></span>
   <button class="btn" onclick="fullscreen()">⤢</button>
 </div>
 <div class="toc" id="toc" onclick="if(event.target===this)toggleToc()">
-  <h2>课件大纲</h2>
+  <h2>大纲</h2>
   <ol id="tocList"></ol>
 </div>
 <script>
 const slides = [
 /* ===== 封面 + 第一章 ===== */
 {type:'cover', html:`
-  <div class="kicker">Tech Talk · 2026</div>
-  <h1>AI Agent 课件<br/>市场机会与商业布局</h1>
-  <div class="sub">什么是 AI Agent · 架构如何设计 · 商业赛道全景与公司布局</div>
-  <div class="meta">
-    <span class="badge">01</span> 概念与架构 &nbsp;·&nbsp;
-    <span class="badge">02</span> 能力地图 &nbsp;·&nbsp;
-    <span class="badge">03</span> 商业赛道 &nbsp;·&nbsp;
-    <span class="badge">04</span> 落地路径 &nbsp;·&nbsp;
-    <span class="badge">05</span> Q&amp;A
-    <br/><br/>
-    <span class="kbd">→</span> / <span class="kbd">Space</span> 下一页 &nbsp;·&nbsp;
-    <span class="kbd">←</span> 上一页 &nbsp;·&nbsp;
-    <span class="kbd">T</span> 大纲 &nbsp;·&nbsp;
-    <span class="kbd">F</span> 全屏
+  <div class="cover-grid">
+    <div class="cover-left">
+      <div class="kicker">Tech Talk · 2026</div>
+      <h1>AI Agent<br/>市场机会与商业布局</h1>
+      <div class="sub">什么是 AI Agent · 架构如何设计 · 商业赛道全景与公司布局</div>
+      <div class="meta">
+        <span class="badge">01</span> 概念与架构 &nbsp;·&nbsp;
+        <span class="badge">02</span> 能力地图 &nbsp;·&nbsp;
+        <span class="badge">03</span> 商业赛道 &nbsp;·&nbsp;
+        <span class="badge">04</span> 落地路径 &nbsp;·&nbsp;
+        <span class="badge">05</span> Q&amp;A
+        <br/><br/>
+        <span class="kbd">→</span> / <span class="kbd">Space</span> 下一页 &nbsp;·&nbsp;
+        <span class="kbd">←</span> 上一页 &nbsp;·&nbsp;
+        <span class="kbd">T</span> 大纲 &nbsp;·&nbsp;
+        <span class="kbd">F</span> 全屏
+      </div>
+    </div>
+    <div class="cover-right">
+      <div class="robot-3d">
+        <div class="robot-head">
+          <div class="robot-face">
+            <div class="robot-eye left"></div>
+            <div class="robot-eye right"></div>
+            <div class="robot-mouth"></div>
+            <div class="robot-line top"></div>
+            <div class="robot-line bottom"></div>
+          </div>
+          <div class="robot-ear left"></div>
+          <div class="robot-ear right"></div>
+          <div class="robot-antenna"></div>
+        </div>
+        <div class="robot-shadow"></div>
+      </div>
+    </div>
   </div>
 `},
 
@@ -1160,41 +1437,82 @@ document.addEventListener('click', e => {
 
 render();
 
-/* === 鼠标视差：光球整体随鼠标微妙移动（不破坏单个光球的 drift 动画）=== */
-const ambient = document.getElementById('ambient');
-let targetX = 0, targetY = 0;
-let curX = 0, curY = 0;
+/* === 鼠标视差：4 个光球各自缓动跟随鼠标（景深效果）=== */
+const ambientOrbs = document.querySelectorAll('.ambient .orb');
+let ambTX = [], ambTY = [], ambCX = [], ambCY = [];
+const strengths = [80, 60, 45, 35];  // 不同光球不同视差强度
+const eases = [0.05, 0.04, 0.03, 0.025];  // 不同缓动速度
+
+ambientOrbs.forEach(() => { ambTX.push(0); ambTY.push(0); ambCX.push(0); ambCY.push(0); });
 
 window.addEventListener('mousemove', e => {
-  targetX = (e.clientX / window.innerWidth - 0.5) * 2;
-  targetY = (e.clientY / window.innerHeight - 0.5) * 2;
+  const nx = (e.clientX / window.innerWidth - 0.5) * 2;
+  const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+  ambientOrbs.forEach((_, i) => {
+    ambTX[i] = nx;
+    ambTY[i] = ny;
+  });
 });
 
-function tickParallax(){
-  curX += (targetX - curX) * 0.05;
-  curY += (targetY - curY) * 0.05;
-  // 整体视差位移（30px 范围内），光球自身的 drift 动画保持不变
-  ambient.style.transform = 'translate(' + (curX * 30) + 'px,' + (curY * 30) + 'px)';
-  requestAnimationFrame(tickParallax);
+function tickAmbient(){
+  ambientOrbs.forEach((orb, i) => {
+    ambCX[i] += (ambTX[i] - ambCX[i]) * eases[i];
+    ambCY[i] += (ambTY[i] - ambCY[i]) * eases[i];
+    orb.style.setProperty('--mx', (ambCX[i] * strengths[i]) + 'px');
+    orb.style.setProperty('--my', (ambCY[i] * strengths[i]) + 'px');
+  });
+  requestAnimationFrame(tickAmbient);
 }
-tickParallax();
+tickAmbient();
 
-/* === 单个光球也有微视差（不同强度模拟景深）=== */
-const orbs = document.querySelectorAll('.ambient .orb');
-let tX2 = 0, tY2 = 0, cX2 = 0, cY2 = 0;
+/* === 封面大机器人 + 全局小机器人：鼠标跟随转头 === */
+const robotHead = document.querySelector('.robot-head');
+const miniHead  = document.querySelector('.mini-head');
+const miniRobot = document.getElementById('miniRobot');
+let robTX = 0, robTY = 0, robCX = 0, robCY = 0;
+
 window.addEventListener('mousemove', e => {
-  tX2 = (e.clientX / window.innerWidth - 0.5) * 2;
-  tY2 = (e.clientY / window.innerHeight - 0.5) * 2;
+  robTX = (e.clientX / window.innerWidth - 0.5) * 2;
+  robTY = (e.clientY / window.innerHeight - 0.5) * 2;
 });
-function tickOrbParallax(){
-  cX2 += (tX2 - cX2) * 0.04;
-  cY2 += (tY2 - cY2) * 0.04;
-  // 注意：直接改 transform 会覆盖 animation，所以用 CSS 变量 + 动画里引用
-  // 但 keyframe 已经写死 translate，所以改为：用 translate3d 在 will-change 之外
-  // 更稳妥：让光球的父级 ambient 移动，单个光球只做 drift（上面已做）
-  requestAnimationFrame(tickOrbParallax);
+
+function tickRobot(){
+  robCX += (robTX - robCX) * 0.06;
+  robCY += (robTY - robCY) * 0.06;
+  // 封面大机器人
+  if(robotHead){
+    const rotY = robCX * 25;
+    const rotX = -15 + robCY * 15;
+    robotHead.style.animation = 'none';
+    robotHead.style.transform = 'translate(-50%,-50%) rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg)';
+  }
+  // 全局小机器人（转头幅度略小）
+  if(miniHead){
+    const rotY = robCX * 20;
+    const rotX = -10 + robCY * 12;
+    miniHead.style.animation = 'none';
+    miniHead.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg)';
+  }
+  requestAnimationFrame(tickRobot);
 }
-// 不调 tickOrbParallax()，让单个光球保持 drift 动画，整体视差由 ambient 容器承担
+tickRobot();
+
+// 封面页时隐藏小机器人（封面已有大机器人），其他页显示
+function updateMiniRobot(){
+  if(!miniRobot) return;
+  const slide = document.querySelector('.slide.active');
+  const isCover = slide && slide.classList.contains('cover');
+  miniRobot.style.opacity = isCover ? '0' : '1';
+  miniRobot.style.pointerEvents = isCover ? 'none' : 'auto';
+  miniRobot.style.transition = 'opacity .4s ease';
+}
+// 在 update() 里也调用
+const _origUpdate = update;
+window.update = function(){
+  _origUpdate();
+  updateMiniRobot();
+};
+updateMiniRobot();
 </script>
 </body>
 <!-- version: 2026-07-19 01:19:58 -->
