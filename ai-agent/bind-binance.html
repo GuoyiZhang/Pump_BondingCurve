@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>绑定 Binance 账户 · AI Agent 策略广场</title>
+  <meta name="description" content="用 API Key 授权平台代你交易，资金始终在你的 Binance">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- 环境光球 -->
+<div class="ambient">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+</div>
+
+<!-- 导航 -->
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <div class="mini-robot"><div class="mini-head"><div class="mini-face"><div class="mini-eye left"></div><div class="mini-eye right"></div><div class="mini-mouth"></div></div><div class="mini-antenna"></div></div></div>
+    <span class="logo-text">AI Agent 策略广场</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">首页</a>
+    <a href="features.html" class="nav-link">功能</a>
+    <a href="creators.html" class="nav-link">创作者</a>
+    <a href="pricing.html" class="nav-link">定价</a>
+    <a href="docs.html" class="nav-link">文档</a>
+  </div>
+  <div class="nav-cta">
+    <a href="pricing.html" class="btn btn-ghost btn-sm">登录</a>
+    <a href="pricing.html" class="btn btn-primary btn-sm">免费注册</a>
+  </div>
+</nav>
+
+<!-- 绑定 Binance 账户 -->
+<section class="auth-layout">
+  <div class="auth-card wide">
+
+    <!-- 头部 -->
+    <div class="auth-header">
+      <div class="auth-icon">🔗</div>
+      <h1>绑定 Binance 账户</h1>
+      <p>用 API Key 授权平台代你交易，资金始终在你的 Binance</p>
+    </div>
+
+    <!-- 步骤进度条 -->
+    <div class="auth-steps">
+      <div class="auth-step done">
+        <div class="auth-step-num">✓</div>
+        <span>账户</span>
+      </div>
+      <div class="auth-step-line done"></div>
+      <div class="auth-step active">
+        <div class="auth-step-num">2</div>
+        <span>绑定 Binance</span>
+      </div>
+      <div class="auth-step-line"></div>
+      <div class="auth-step">
+        <div class="auth-step-num">3</div>
+        <span>风险测评</span>
+      </div>
+      <div class="auth-step-line"></div>
+      <div class="auth-step">
+        <div class="auth-step-num">4</div>
+        <span>完成</span>
+      </div>
+    </div>
+
+    <!-- 安全提示 -->
+    <div class="security-notice">
+      <span class="notice-icon">⚠️</span>
+      <span>我们只用 API Key 代你下单，无法转出你的资金。建议在 Binance 设置 IP 白名单 + 只开启交易权限，不开提现权限。</span>
+    </div>
+
+    <!-- 表单 -->
+    <form id="bindForm" autocomplete="off">
+
+      <!-- API Key -->
+      <div class="form-group">
+        <label class="form-label" for="apiKey">Binance API Key<span class="required">*</span></label>
+        <div class="input-group">
+          <span class="input-icon">🔑</span>
+          <input type="text" id="apiKey" name="apiKey" class="form-input" placeholder="输入你的 Binance API Key" required>
+        </div>
+      </div>
+
+      <!-- Secret Key -->
+      <div class="form-group">
+        <label class="form-label" for="secretKey">Binance Secret Key<span class="required">*</span></label>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="secretKey" name="secretKey" class="form-input" placeholder="输入你的 Binance Secret Key" required>
+          <span class="input-toggle" id="toggleSecret" data-state="hidden">显示</span>
+        </div>
+      </div>
+
+      <!-- 权限说明 -->
+      <div class="form-group">
+        <label class="form-label">API 权限说明</label>
+        <div class="permission-grid">
+          <div class="permission-item">
+            <span class="perm-icon">✅</span>
+            <span class="perm-text">现货交易</span>
+            <span class="perm-status text-ok">需要</span>
+          </div>
+          <div class="permission-item">
+            <span class="perm-icon">✅</span>
+            <span class="perm-text">合约交易</span>
+            <span class="perm-status text-muted">可选</span>
+          </div>
+          <div class="permission-item">
+            <span class="perm-icon">✅</span>
+            <span class="perm-text">读取账户余额</span>
+            <span class="perm-status text-ok">需要</span>
+          </div>
+          <div class="permission-item danger">
+            <span class="perm-icon">❌</span>
+            <span class="perm-text">提现权限</span>
+            <span class="perm-status text-danger">不要开启</span>
+          </div>
+          <div class="permission-item danger">
+            <span class="perm-icon">❌</span>
+            <span class="perm-text">内部转账</span>
+            <span class="perm-status text-danger">不要开启</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 同意 checkbox -->
+      <div class="form-group">
+        <label class="form-check">
+          <input type="checkbox" id="agreeRisk">
+          <span>我已了解 API Key 风险，并确认在 Binance 关闭了提现权限</span>
+        </label>
+      </div>
+
+      <!-- 绑定按钮 -->
+      <button type="submit" id="bindBtn" class="btn btn-primary btn-block" disabled>
+        🔗 绑定 Binance 账户
+      </button>
+
+      <!-- 跳过链接 -->
+      <div class="auth-switch">
+        <a href="risk-assessment.html" style="margin-left:0;display:block;margin-top:12px;color:var(--muted)">稍后绑定 →</a>
+      </div>
+
+    </form>
+
+    <!-- 切换链接 -->
+    <div class="auth-switch">
+      还没账户？先注册 <a href="register.html">→</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- 共享脚本 -->
+<script src="script.js"></script>
+
+<!-- 页面交互：勾选 checkbox 才能点绑定按钮 + 显示/隐藏 Secret Key -->
+<script>
+  const agreeCheckbox = document.getElementById('agreeRisk');
+  const bindBtn = document.getElementById('bindBtn');
+  const toggleSecret = document.getElementById('toggleSecret');
+  const secretInput = document.getElementById('secretKey');
+
+  // 勾选 checkbox 才能点绑定按钮
+  function updateBtnState() {
+    bindBtn.disabled = !agreeCheckbox.checked;
+    if (agreeCheckbox.checked) {
+      bindBtn.style.opacity = '1';
+      bindBtn.style.cursor = 'pointer';
+    } else {
+      bindBtn.style.opacity = '0.5';
+      bindBtn.style.cursor = 'not-allowed';
+    }
+  }
+  agreeCheckbox.addEventListener('change', updateBtnState);
+  updateBtnState();
+
+  // 显示/隐藏 Secret Key
+  toggleSecret.addEventListener('click', () => {
+    const hidden = secretInput.type === 'password';
+    secretInput.type = hidden ? 'text' : 'password';
+    toggleSecret.textContent = hidden ? '隐藏' : '显示';
+  });
+
+  // 提交拦截
+  document.getElementById('bindForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!agreeCheckbox.checked) return;
+    bindBtn.textContent = '⏳ 绑定中...';
+    bindBtn.disabled = true;
+    setTimeout(() => {
+      window.location.href = 'risk-assessment.html';
+    }, 800);
+  });
+</script>
+
+</body>
+</html>

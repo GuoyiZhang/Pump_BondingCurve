@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>创建账户 · AI Agent 策略广场</title>
+  <meta name="description" content="3 分钟注册，开始你的 AI Agent 之旅。选择普通用户或策略创作者角色，开启自动化策略执行。">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- 环境光球 -->
+<div class="ambient">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+</div>
+
+<!-- 导航 -->
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <div class="mini-robot"><div class="mini-head"><div class="mini-face"><div class="mini-eye left"></div><div class="mini-eye right"></div><div class="mini-mouth"></div></div><div class="mini-antenna"></div></div></div>
+    <span class="logo-text">AI Agent 策略广场</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">首页</a>
+    <a href="features.html" class="nav-link">功能</a>
+    <a href="creators.html" class="nav-link">创作者</a>
+    <a href="pricing.html" class="nav-link">定价</a>
+    <a href="docs.html" class="nav-link">文档</a>
+  </div>
+  <div class="nav-cta">
+    <a href="login.html" class="btn btn-ghost btn-sm">登录</a>
+    <a href="register.html" class="btn btn-primary btn-sm">免费注册</a>
+  </div>
+</nav>
+
+<!-- 注册卡片 -->
+<div class="auth-layout">
+  <div class="auth-card wide">
+
+    <!-- 头部 -->
+    <div class="auth-header">
+      <div class="auth-icon">🚀</div>
+      <h1>创建账户</h1>
+      <p>3 分钟注册，开始你的 AI Agent 之旅</p>
+    </div>
+
+    <!-- 表单 -->
+    <form class="auth-form" onsubmit="return false;">
+
+      <!-- 邮箱 -->
+      <div class="form-group">
+        <label class="form-label" for="email">邮箱<span class="required">*</span></label>
+        <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required autocomplete="email">
+      </div>
+
+      <!-- 密码 -->
+      <div class="form-group">
+        <label class="form-label" for="password">密码<span class="required">*</span></label>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="password" name="password" class="form-input" placeholder="设置登录密码" required autocomplete="new-password">
+          <span class="input-toggle" data-toggle="password">显示</span>
+        </div>
+        <div class="form-hint">至少 8 位，包含字母和数字</div>
+      </div>
+
+      <!-- 确认密码 -->
+      <div class="form-group">
+        <label class="form-label" for="confirm-password">确认密码<span class="required">*</span></label>
+        <div class="input-group">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="confirm-password" name="confirm-password" class="form-input" placeholder="再次输入密码" required autocomplete="new-password">
+          <span class="input-toggle" data-toggle="confirm-password">显示</span>
+        </div>
+      </div>
+
+      <!-- 角色选择 -->
+      <div class="form-group">
+        <label class="form-label">选择角色<span class="required">*</span></label>
+        <div class="role-select" id="roleSelect">
+          <div class="role-card selected" data-role="user">
+            <div class="role-card-icon">👤</div>
+            <div class="role-card-title">普通用户</div>
+            <div class="role-card-desc">订阅策略 + Agent 自动执行</div>
+          </div>
+          <div class="role-card" data-role="creator">
+            <div class="role-card-icon">🎨</div>
+            <div class="role-card-title">策略创作者</div>
+            <div class="role-card-desc">3 种方式创建策略，赚 85% 订阅费</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 同意条款 -->
+      <div class="form-group">
+        <label class="form-check">
+          <input type="checkbox" id="agree" required>
+          <span>我已阅读并同意 <a href="#" target="_blank">《用户协议》</a> 和 <a href="#" target="_blank">《隐私政策》</a></span>
+        </label>
+      </div>
+
+      <!-- 注册按钮 -->
+      <button type="submit" class="btn btn-primary btn-block">创建账户</button>
+
+    </form>
+
+    <!-- 分隔线 -->
+    <div class="form-divider">或</div>
+
+    <!-- 社交注册 -->
+    <div class="social-buttons">
+      <button class="btn-social">
+        <span class="social-icon">🔵</span>
+        <span>使用 Google 注册</span>
+      </button>
+      <button class="btn-social">
+        <span class="social-icon">🍎</span>
+        <span>使用 Apple ID 注册</span>
+      </button>
+    </div>
+
+    <!-- 切换登录 -->
+    <div class="auth-switch">
+      已有账户？<a href="login.html">立即登录 →</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+
+<!-- 角色卡片切换逻辑 -->
+<script>
+  const roleCards = document.querySelectorAll('#roleSelect .role-card');
+  roleCards.forEach(card => {
+    card.addEventListener('click', () => {
+      roleCards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+  });
+</script>
+
+</body>
+</html>

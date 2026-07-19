@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 · AI Agent 策略广场</title>
+  <meta name="description" content="登录你的账户，继续使用 AI Agent 策略广场。">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- 环境光球 -->
+<div class="ambient">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+</div>
+
+<!-- 导航 -->
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <div class="mini-robot"><div class="mini-head"><div class="mini-face"><div class="mini-eye left"></div><div class="mini-eye right"></div><div class="mini-mouth"></div></div><div class="mini-antenna"></div></div></div>
+    <span class="logo-text">AI Agent 策略广场</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">首页</a>
+    <a href="features.html" class="nav-link">功能</a>
+    <a href="creators.html" class="nav-link">创作者</a>
+    <a href="pricing.html" class="nav-link">定价</a>
+    <a href="docs.html" class="nav-link">文档</a>
+  </div>
+  <div class="nav-cta">
+    <a href="login.html" class="btn btn-primary btn-sm">登录</a>
+    <a href="register.html" class="btn btn-ghost btn-sm">免费注册</a>
+  </div>
+</nav>
+
+<!-- 登录卡片 -->
+<div class="auth-layout">
+  <div class="auth-card">
+
+    <!-- Logo + 机器人图标 -->
+    <div class="auth-header">
+      <div class="auth-icon">
+        <div class="mini-robot" style="width:40px;height:40px">
+          <div class="mini-head" style="width:40px;height:40px">
+            <div class="mini-face" style="border-radius:12px">
+              <div class="mini-eye left" style="width:9px;height:9px;top:12px;left:8px"></div>
+              <div class="mini-eye right" style="width:9px;height:9px;top:12px;right:8px"></div>
+              <div class="mini-mouth" style="bottom:10px;width:14px"></div>
+            </div>
+            <div class="mini-antenna"></div>
+          </div>
+        </div>
+      </div>
+      <h1>欢迎回来</h1>
+      <p>登录你的账户继续使用</p>
+    </div>
+
+    <!-- 表单 -->
+    <form action="#" method="post" novalidate>
+
+      <!-- 邮箱 -->
+      <div class="form-group">
+        <label class="form-label" for="email">邮箱<span class="required">*</span></label>
+        <input
+          class="form-input"
+          type="email"
+          id="email"
+          name="email"
+          required
+          autocomplete="email"
+          placeholder="you@example.com">
+      </div>
+
+      <!-- 密码（带显示/隐藏切换）-->
+      <div class="form-group">
+        <label class="form-label" for="password">密码<span class="required">*</span></label>
+        <div class="input-group">
+          <input
+            class="form-input"
+            type="password"
+            id="password"
+            name="password"
+            required
+            autocomplete="current-password"
+            placeholder="请输入密码">
+          <button type="button" class="input-toggle" id="pwdToggle" aria-label="显示/隐藏密码">显示</button>
+        </div>
+      </div>
+
+      <!-- 记住我 + 忘记密码 -->
+      <div class="form-row">
+        <label class="form-check">
+          <input type="checkbox" name="remember" value="1">
+          <span>记住我</span>
+        </label>
+        <a href="#" class="form-link">忘记密码？</a>
+      </div>
+
+      <!-- 登录按钮 -->
+      <button type="submit" class="btn btn-primary btn-block">登录</button>
+
+    </form>
+
+    <!-- 分隔线 -->
+    <div class="form-divider">或</div>
+
+    <!-- 社交登录 -->
+    <div class="social-buttons">
+      <button type="button" class="btn-social">
+        <span class="social-icon">🟢</span>
+        <span>使用 Google 账号登录</span>
+      </button>
+      <button type="button" class="btn-social">
+        <span class="social-icon">🍎</span>
+        <span>使用 Apple ID 登录</span>
+      </button>
+    </div>
+
+    <!-- 切换链接 -->
+    <div class="auth-switch">
+      还没账户？<a href="register.html">立即注册 →</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
