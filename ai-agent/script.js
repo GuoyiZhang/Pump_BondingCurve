@@ -27,9 +27,8 @@ function tickAmbient() {
 }
 tickAmbient();
 
-// === 3D 机器人头部跟随鼠标转动 ===
+// === 3D 机器人头部跟随鼠标转动（只控制封面大机器人，不控制导航 logo）===
 const robotHead = document.querySelector('.robot-head');
-const miniHead = document.querySelector('.mini-head');
 let robTX = 0, robTY = 0, robCX = 0, robCY = 0;
 
 window.addEventListener('mousemove', e => {
@@ -45,12 +44,6 @@ function tickRobot() {
     const rotX = -15 + robCY * 15;
     robotHead.style.animation = 'none';
     robotHead.style.transform = 'translate(-50%,-50%) rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg)';
-  }
-  if (miniHead) {
-    const rotY = robCX * 20;
-    const rotX = -10 + robCY * 12;
-    miniHead.style.animation = 'none';
-    miniHead.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg)';
   }
   requestAnimationFrame(tickRobot);
 }
