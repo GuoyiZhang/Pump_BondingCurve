@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>创作者中心 · AI Agent 策略广场</title>
+  <meta name="description" content="3 种方式创建策略，上架广场赚订阅费 85%。创作者经济，你得大头。">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="ambient">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+</div>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <div class="mini-robot"><div class="mini-head"><div class="mini-face"><div class="mini-eye left"></div><div class="mini-eye right"></div><div class="mini-mouth"></div></div><div class="mini-antenna"></div></div></div>
+    <span class="logo-text">AI Agent 策略广场</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">首页</a>
+    <a href="features.html" class="nav-link">功能</a>
+    <a href="creators.html" class="nav-link">创作者</a>
+    <a href="pricing.html" class="nav-link">定价</a>
+    <a href="docs.html" class="nav-link">文档</a>
+  </div>
+  <div class="nav-cta">
+    <a href="pricing.html" class="btn btn-ghost btn-sm">登录</a>
+    <a href="pricing.html" class="btn btn-primary btn-sm">免费注册</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="section" style="padding-top:140px">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">创作者中心</span>
+      <h1>写策略，<span class="gradient-text">赚 85% 订阅费</span></h1>
+      <p class="lead" style="margin:0 auto">3 种方式创建策略上架广场，平台抽 15%，你得大头</p>
+    </div>
+    <div class="flex gap-md" style="justify-content:center;flex-wrap:wrap;margin-top:32px">
+      <a href="pricing.html" class="btn btn-primary btn-lg">申请成为创作者</a>
+      <a href="docs.html" class="btn btn-ghost btn-lg">查看文档</a>
+    </div>
+  </div>
+</section>
+
+<!-- 创作者分账 -->
+<section class="section-sm">
+  <div class="container">
+    <div class="card" style="padding:48px;background:linear-gradient(135deg,rgba(107,140,255,0.08),rgba(167,139,250,0.05));border-color:rgba(107,140,255,0.3)">
+      <div class="section-header" style="margin-bottom:32px">
+        <span class="kicker">分账模型</span>
+        <h2>创作者得 85%</h2>
+        <p>每订阅一份策略，你拿大头</p>
+      </div>
+      <div class="grid grid-3" style="gap:24px">
+        <div style="text-align:center;padding:24px;background:rgba(107,140,255,0.06);border-radius:var(--r-md);border:1px solid rgba(107,140,255,0.2)">
+          <div style="font-size:14px;color:var(--fg-soft);margin-bottom:8px">用户付订阅费</div>
+          <div style="font-size:36px;font-weight:700" class="gradient-text">100%</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:8px">如 50 USDT/月</div>
+        </div>
+        <div style="text-align:center;padding:24px;background:rgba(167,139,250,0.06);border-radius:var(--r-md);border:1px solid rgba(167,139,250,0.2)">
+          <div style="font-size:14px;color:var(--fg-soft);margin-bottom:8px">创作者得</div>
+          <div style="font-size:36px;font-weight:700;color:var(--accent-3)">85%</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:8px">42.5 USDT/月</div>
+        </div>
+        <div style="text-align:center;padding:24px;background:rgba(107,140,255,0.06);border-radius:var(--r-md);border:1px solid rgba(107,140,255,0.2)">
+          <div style="font-size:14px;color:var(--fg-soft);margin-bottom:8px">平台抽</div>
+          <div style="font-size:36px;font-weight:700;color:var(--accent)">15%</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:8px">7.5 USDT/月</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 种创建模式 -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">策略创建</span>
+      <h2>3 种方式，按你顺手的选择</h2>
+      <p>普通人用自然语言，小白用可视化，量化达人写代码</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="flex items-center gap-sm" style="margin-bottom:12px">
+          <span class="badge">推荐</span>
+          <span class="text-muted" style="font-size:12px">90% 创作者</span>
+        </div>
+        <div class="card-icon">💬</div>
+        <h3 class="card-title">自然语言描述</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:16px">用中文描述策略，AI 自动解析</p>
+        <div class="code-block" style="font-size:12px">
+<span class="c">// 创作者输入</span>
+<span class="s">"BTC 跌 5% 就帮我定投 100U，
+  止损 10%，订阅费 50U/月"</span>
+
+<span class="c">// AI 自动解析为</span>
+<span class="key">strategy</span>:
+  trigger: PRICE_DROP 5%
+  action: DCA 100U
+  subscription: 50U/月
+        </div>
+      </div>
+      <div class="card">
+        <div class="flex items-center gap-sm" style="margin-bottom:12px">
+          <span class="badge warn">小白友好</span>
+        </div>
+        <div class="card-icon">🎨</div>
+        <h3 class="card-title">可视化配置</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:16px">拖拽组件配置，所见即所得</p>
+        <div style="font-size:13px;color:var(--fg-soft);line-height:2">
+          <div>🎯 拖拽：触发条件 + 动作 + 风控</div>
+          <div>⚙️ 配置：参数 + 订阅费</div>
+          <div>👁️ 预览：YAML 实时生成</div>
+          <div>✅ 上架：审核后展示</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="flex items-center gap-sm" style="margin-bottom:12px">
+          <span class="badge warn">量化达人</span>
+        </div>
+        <div class="card-icon">💻</div>
+        <h3 class="card-title">写代码上传</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:16px">Python/DSL 上传，沙箱执行</p>
+        <div class="code-block" style="font-size:12px">
+<span class="k">def</span> <span class="key">signal</span>(ctx):
+    ma5 = btc.sma(<span class="n">5</span>)
+    ma20 = btc.sma(<span class="n">20</span>)
+    <span class="k">if</span> ma5 > ma20:
+        <span class="k">return</span> Signal.BUY
+    <span class="k">elif</span> ma5 < ma20:
+        <span class="k">return</span> Signal.SELL
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 创作者分级 -->
+<section class="section-sm">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">声誉系统</span>
+      <h2>创作者分级</h2>
+      <p>表现越好，分成越高 + 优先曝光</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-icon">🥉</div>
+        <h3 class="card-title">普通创作者</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:12px">实名认证 + 通过审核</p>
+        <ul style="font-size:13px;color:var(--fg-soft);line-height:1.9">
+          <li>上架策略</li>
+          <li>订阅费分成 85%</li>
+          <li>普通曝光</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(167,139,250,0.3)">
+        <div class="card-icon" style="background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.2)">🥈</div>
+        <h3 class="card-title">银牌创作者</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:12px">3 个月稳定表现 + 100 订阅者</p>
+        <ul style="font-size:13px;color:var(--fg-soft);line-height:1.9">
+          <li>上架策略</li>
+          <li>订阅费分成 85%</li>
+          <li>优先曝光</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(251,191,36,0.3)">
+        <div class="card-icon" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.2)">🥇</div>
+        <h3 class="card-title">金牌创作者</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:12px">6 个月稳定表现 + 500 讯阅者</p>
+        <ul style="font-size:13px;color:var(--fg-soft);line-height:1.9">
+          <li>上架策略</li>
+          <li>订阅费分成 85%</li>
+          <li>平台推荐 + 孵化资源</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 创作者旅程 -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">创作者旅程</span>
+      <h2>从注册到赚钱，4 步走</h2>
+      <p>快速上架，快速变现</p>
+    </div>
+    <div class="flow" style="justify-content:center">
+      <div class="flow-step">
+        <div class="flow-step-icon">1️⃣</div>
+        <div class="flow-step-title">注册 + 实名</div>
+        <div class="flow-step-desc">申请成为创作者</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">2️⃣</div>
+        <div class="flow-step-title">创建策略</div>
+        <div class="flow-step-desc">3 种方式任选</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">3️⃣</div>
+        <div class="flow-step-title">平台审核</div>
+        <div class="flow-step-desc">回测 + 安全</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">4️⃣</div>
+        <div class="flow-step-title">上架广场</div>
+        <div class="flow-step-desc">用户订阅 + 分账</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 收入计算器 -->
+<section class="section-sm">
+  <div class="container">
+    <div class="card" style="padding:48px">
+      <div class="section-header" style="margin-bottom:32px">
+        <span class="kicker">收入预估</span>
+        <h2>你能赚多少？</h2>
+        <p>以一个年化 25% 的稳健策略为例</p>
+      </div>
+      <div class="grid grid-4">
+        <div style="text-align:center;padding:20px;background:var(--bg-card);border-radius:var(--r-md);border:1px solid var(--border)">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px">订阅者</div>
+          <div style="font-size:24px;font-weight:700" class="gradient-text">100 人</div>
+        </div>
+        <div style="text-align:center;padding:20px;background:var(--bg-card);border-radius:var(--r-md);border:1px solid var(--border)">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px">订阅费</div>
+          <div style="font-size:24px;font-weight:700" class="gradient-text">50U/月</div>
+        </div>
+        <div style="text-align:center;padding:20px;background:var(--bg-card);border-radius:var(--r-md);border:1px solid var(--border)">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px">月收入</div>
+          <div style="font-size:24px;font-weight:700;color:var(--accent-3)">4,250U</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">85% × 100 × 50</div>
+        </div>
+        <div style="text-align:center;padding:20px;background:var(--bg-card);border-radius:var(--r-md);border:1px solid var(--border)">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px">年收入</div>
+          <div style="font-size:24px;font-weight:700;color:var(--ok)">51,000U</div>
+        </div>
+      </div>
+      <p class="text-center text-muted" style="font-size:12px;margin-top:20px">* 仅为预估，实际收入取决于策略表现和订阅者数量</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="container">
+    <div class="card text-center" style="padding:60px 40px;background:linear-gradient(135deg,rgba(107,140,255,0.08),rgba(167,139,250,0.05));border-color:rgba(107,140,255,0.3)">
+      <span class="kicker">立即入驻</span>
+      <h2 style="margin-bottom:16px">把你的策略变成收入</h2>
+      <p class="lead" style="margin:0 auto 32px">3 种方式创建策略，赚 85% 订阅费</p>
+      <div class="flex gap-md" style="justify-content:center;flex-wrap:wrap">
+        <a href="pricing.html" class="btn btn-primary btn-lg">申请成为创作者</a>
+        <a href="docs.html" class="btn btn-ghost btn-lg">查看文档</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <div class="mini-robot" style="width:28px;height:28px"><div class="mini-head" style="width:28px;height:28px"><div class="mini-face" style="border-radius:9px"><div class="mini-eye left" style="width:6px;height:6px;top:9px;left:5px"></div><div class="mini-eye right" style="width:6px;height:6px;top:9px;right:5px"></div><div class="mini-mouth" style="bottom:6px;width:8px"></div></div></div></div>
+          <span class="logo-text">AI Agent 策略广场</span>
+        </div>
+        <p class="footer-desc">创作者发布策略，用户订阅，Agent 自动执行，平台赚手续费。资金不离 Binance，安全透明可审计。</p>
+      </div>
+      <div class="footer-col"><h4>产品</h4><ul><li><a href="features.html">功能介绍</a></li><li><a href="pricing.html">定价</a></li><li><a href="docs.html">技术文档</a></li></ul></div>
+      <div class="footer-col"><h4>角色</h4><ul><li><a href="index.html">普通用户</a></li><li><a href="creators.html">创作者</a></li><li><a href="docs.html">开发者</a></li></ul></div>
+      <div class="footer-col"><h4>资源</h4><ul><li><a href="docs.html">文档</a></li><li><a href="docs.html">API 参考</a></li><li><a href="docs.html">示例</a></li></ul></div>
+      <div class="footer-col"><h4>公司</h4><ul><li><a href="#">关于我们</a></li><li><a href="#">联系</a></li><li><a href="#">招聘</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 AI Agent 策略广场. All rights reserved.</span><span>资金不离 Binance · 不接触用户资金 · 风险自担</span></div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文档 · AI Agent 策略广场</title>
+  <meta name="description" content="技术文档：架构、Agent 设计、API、SDK、PoC 代码、技术选型">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .docs-layout{display:grid;grid-template-columns:240px 1fr;gap:40px;max-width:1200px;margin:0 auto;padding:0 40px}
+    .docs-sidebar{position:sticky;top:100px;align-self:start;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-md);padding:20px;max-height:calc(100vh - 120px);overflow-y:auto}
+    .docs-sidebar h4{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin:16px 0 8px}
+    .docs-sidebar h4:first-child{margin-top:0}
+    .docs-sidebar a{display:block;padding:6px 10px;font-size:13px;color:var(--fg-soft);border-radius:6px;margin-bottom:2px;transition:all .2s}
+    .docs-sidebar a:hover{color:var(--fg);background:rgba(255,255,255,0.05)}
+    .docs-sidebar a.active{color:var(--accent);background:rgba(107,140,255,0.1)}
+    .docs-content{padding-bottom:60px}
+    .docs-content section{margin-bottom:60px;scroll-margin-top:100px}
+    .docs-content h2{margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+    .docs-content h3{margin:24px 0 12px}
+    .docs-content p{margin-bottom:12px}
+    .docs-content ul{margin:12px 0 12px 20px}
+    .docs-content ul li{list-style:disc;margin-bottom:6px;color:var(--fg-soft);font-size:14px}
+    @media (max-width:900px){.docs-layout{grid-template-columns:1fr;gap:20px}.docs-sidebar{position:static;max-height:none}}
+  </style>
+</head>
+<body>
+
+<div class="ambient">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+</div>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <div class="mini-robot"><div class="mini-head"><div class="mini-face"><div class="mini-eye left"></div><div class="mini-eye right"></div><div class="mini-mouth"></div></div><div class="mini-antenna"></div></div></div>
+    <span class="logo-text">AI Agent 策略广场</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">首页</a>
+    <a href="features.html" class="nav-link">功能</a>
+    <a href="creators.html" class="nav-link">创作者</a>
+    <a href="pricing.html" class="nav-link">定价</a>
+    <a href="docs.html" class="nav-link">文档</a>
+  </div>
+  <div class="nav-cta">
+    <a href="pricing.html" class="btn btn-ghost btn-sm">登录</a>
+    <a href="pricing.html" class="btn btn-primary btn-sm">免费注册</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="section-sm" style="padding-top:120px">
+  <div class="container">
+    <div class="section-header" style="margin-bottom:32px">
+      <span class="kicker">文档</span>
+      <h1>技术文档</h1>
+      <p>架构、Agent 设计、API、SDK、PoC 代码、技术选型</p>
+    </div>
+  </div>
+</section>
+
+<!-- 文档主体 -->
+<div class="docs-layout">
+  <!-- 侧边栏 -->
+  <aside class="docs-sidebar">
+    <h4>快速开始</h4>
+    <a href="#overview">产品概览</a>
+    <a href="#architecture">系统架构</a>
+    <h4>核心设计</h4>
+    <a href="#agents">5 类 Agent</a>
+    <a href="#strategy-yaml">策略 YAML 结构</a>
+    <a href="#binance-router">BinanceRouter</a>
+    <a href="#risk-control">3 层风控</a>
+    <h4>API & SDK</h4>
+    <a href="#api">REST API</a>
+    <a href="#sdk">Python SDK</a>
+    <a href="#mcp">MCP Server</a>
+    <h4>实施</h4>
+    <a href="#tech-stack">技术栈</a>
+    <a href="#roadmap">实现路线</a>
+    <a href="#tech-selection">技术选型</a>
+    <h4>参考</h4>
+    <a href="#poc">PoC 代码</a>
+    <a href="#faq">FAQ</a>
+  </aside>
+
+  <!-- 内容 -->
+  <div class="docs-content">
+
+    <section id="overview">
+      <h2>📋 产品概览</h2>
+      <p>AI Agent 策略广场是一个连接策略创作者和普通用户的平台：</p>
+      <ul>
+        <li><b>🎨 策略创作者</b>：3 种方式创建策略上架广场，赚订阅费 85%</li>
+        <li><b>🏪 平台</b>：管理广场 + 提供 Agent + 风控 + BinanceRouter，赚两类手续费</li>
+        <li><b>👤 普通用户</b>：订阅策略 + Agent 自动执行，可升级为创作者</li>
+      </ul>
+      <p>平台两类手续费：① 交易手续费分成（Binance 0.1% × 20% = 0.02%）、② 策略订阅费抽成（15%）。</p>
+    </section>
+
+    <section id="architecture">
+      <h2>🏗️ 系统架构</h2>
+      <div class="code-block" style="margin:16px 0">
+<span class="c">前端（React + TypeScript）</span>
+    ↓
+<span class="c">API Gateway（Kong + 认证 + 限流）</span>
+    ↓
+<span class="c">业务服务（NestJS + FastAPI）</span>
+    ├─ 用户服务（注册 + Binance API Key 加密 + 角色管理）
+    ├─ 策略服务（3 种创建模式 + YAML 引擎 + 沙箱 + 审核流程）
+    ├─ 创作者服务（上架 + 分账 + 声誉）
+    ├─ Agent 服务（5 类 Agent）
+    ├─ 风控服务（3 层风控）
+    └─ BinanceRouter 服务（对接 + 限流 + 降级 + 手续费扣点）
+    ↓
+<span class="c">数据层（PostgreSQL + Redis + ES + InfluxDB + Kafka）</span>
+      </div>
+      <p>详细架构见 <code>product/技术架构与实现路线.md</code></p>
+    </section>
+
+    <section id="agents">
+      <h2>🤖 5 类 Agent</h2>
+      <h3>① 自然语言解析 Agent</h3>
+      <p>服务对象：创作者。中文描述 → 结构化 YAML 策略 + 风险提示。</p>
+      <div class="code-block">
+<span class="c"># 创作者输入</span>
+<span class="s">"BTC 跌 5% 就帮我定投 100U，止损 10%"</span>
+
+<span class="c"># Agent 输出 YAML</span>
+<span class="key">strategy</span>:
+  trigger: {type: PRICE_DROP, threshold: 5%}
+  action: {type: DCA, amount: 100U}
+  risk_control: {stop_loss: 10%}
+      </div>
+
+      <h3>② 可视化配置 Agent</h3>
+      <p>辅助创作者拖拽组件 + 参数校验 + 冲突检测。生成同样的 YAML。</p>
+
+      <h3>③ 代码审核 Agent</h3>
+      <p>审核创作者上传的 Python 代码：AST 安全分析 + 沙箱回测 + 上架审核。</p>
+
+      <h3>④ 策略执行 Agent ⭐核心</h3>
+      <p>服务对象：普通用户。7×24 监控市场 + 触发条件 + 风控 + 调 BinanceRouter 下单。</p>
+      <div class="code-block">
+<span class="c"># 执行 Agent 工作流</span>
+1. check_trigger(strategy)   <span class="c"># 检查触发条件</span>
+2. check_risk(signal)        <span class="c"># 3 层风控</span>
+3. place_order_via_router()  <span class="c"># 调 BinanceRouter</span>
+4. record_platform_fee()     <span class="c"># 记录平台手续费</span>
+5. notify_user()              <span class="c"># 通知用户</span>
+      </div>
+
+      <h3>⑤ 策略优化 Agent</h3>
+      <p>服务对象：创作者。定期分析策略表现 + 建议调参。</p>
+    </section>
+
+    <section id="strategy-yaml">
+      <h2>📊 策略 YAML 结构</h2>
+      <div class="code-block">
+<span class="key">strategy</span>:
+  <span class="key">name</span>: <span class="s">"BTC 跌5定投"</span>
+  <span class="key">creator_id</span>: <span class="s">"c_001"</span>
+  <span class="key">subscription_fee</span>: <span class="n">50</span>  <span class="c"># USDT/月</span>
+
+  <span class="key">trigger</span>:
+    <span class="key">type</span>: PRICE_DROP
+    <span class="key">symbol</span>: <span class="s">"BTCUSDT"</span>
+    <span class="key">threshold_pct</span>: <span class="n">5</span>
+    <span class="key">window_hours</span>: <span class="n">24</span>
+
+  <span class="key">action</span>:
+    <span class="key">type</span>: DCA
+    <span class="key">symbol</span>: <span class="s">"BTCUSDT"</span>
+    <span class="key">amount_usdt</span>: <span class="n">100</span>
+    <span class="key">order_type</span>: MARKET
+
+  <span class="key">risk_control</span>:
+    <span class="key">stop_loss_pct</span>: <span class="n">10</span>
+    <span class="key">take_profit_pct</span>: <span class="n">30</span>
+    <span class="key">max_position_pct</span>: <span class="n">50</span>
+    <span class="key">max_leverage</span>: <span class="n">3</span>
+      </div>
+
+      <h3>触发条件类型</h3>
+      <ul>
+        <li><code>PRICE_DROP</code> / <code>PRICE_RISE</code> - 价格涨跌</li>
+        <li><code>PRICE_CROSS</code> - 价格突破均线</li>
+        <li><code>TIME_BASED</code> - 时间触发（cron）</li>
+        <li><code>INDICATOR</code> - 技术指标（RSI / MACD / MA）</li>
+      </ul>
+
+      <h3>动作类型</h3>
+      <ul>
+        <li><code>BUY</code> / <code>SELL</code> - 买卖</li>
+        <li><code>DCA</code> - 定投</li>
+        <li><code>GRID</code> - 网格</li>
+        <li><code>REBALANCE</code> - 再平衡</li>
+        <li><code>CLOSE_ALL</code> - 清仓</li>
+      </ul>
+    </section>
+
+    <section id="binance-router">
+      <h2>🔗 BinanceRouter</h2>
+      <p>平台自建的 Binance API 统一接入层（核心资产，不依赖任何框架）。</p>
+      <h3>核心能力</h3>
+      <ul>
+        <li><b>统一接入</b>：现货/合约/行情 API 统一封装</li>
+        <li><b>限流</b>：API Key 池 + 限速 + 队列</li>
+        <li><b>重试</b>：失败自动重试 3 次</li>
+        <li><b>降级</b>：Binance 故障时切换 Backup API</li>
+        <li><b>手续费扣点</b>：每笔交易记录 Binance 手续费，平台抽 20%</li>
+        <li><b>多交易所扩展</b>：支持 OKX / Bybit / Coinbase</li>
+      </ul>
+      <div class="code-block">
+<span class="k">class</span> <span class="key">BinanceRouter</span>:
+    <span class="k">async def</span> <span class="key">place_order</span>(user_id, symbol, side, size):
+        <span class="c"># 1. 限流检查</span>
+        <span class="k">await</span> self.rate_limiter.acquire(user_id)
+        <span class="c"># 2. 调 Binance API（带重试）</span>
+        order = <span class="k">await</span> self.binance.place_order(...)
+        <span class="c"># 3. 记录手续费</span>
+        fee = order.amount * <span class="n">0.001</span>  <span class="c"># Binance 0.1%</span>
+        platform_fee = fee * <span class="n">0.20</span>    <span class="c"># 平台抽 20%</span>
+        <span class="k">await</span> self.fee_ledger.record(
+            user_id, fee, platform_fee
+        )
+        <span class="k">return</span> order
+      </div>
+    </section>
+
+    <section id="risk-control">
+      <h2>🛡️ 3 层风控</h2>
+      <h3>① 用户层</h3>
+      <p>用户自定义风险偏好 + 仓位/杠杆/止损限制。超限拒绝执行。</p>
+      <h3>② 策略层</h3>
+      <p>策略自带风控规则：最大回撤限制、信号频率异常、策略下架机制。</p>
+      <h3>③ 平台层</h3>
+      <p>全局红线：黑名单币种、异常波动暂停、API 异常保护、全局熔断。</p>
+      <div class="code-block">
+<span class="k">async def</span> <span class="key">check_all</span>(signal, user_config):
+    <span class="c"># 3 层全检查</span>
+    <span class="k">if not</span> <span class="k">await</span> check_user_risk(signal, user_config):
+        <span class="k">return</span> REJECT(<span class="s">"用户风控拒绝"</span>)
+    <span class="k">if not</span> <span class="k">await</span> check_strategy_risk(signal):
+        <span class="k">return</span> REJECT(<span class="s">"策略风控拒绝"</span>)
+    <span class="k">if not</span> <span class="k">await</span> check_platform_risk(signal):
+        <span class="k">return</span> REJECT(<span class="s">"平台风控拒绝"</span>)
+    <span class="k">return</span> APPROVED
+      </div>
+    </section>
+
+    <section id="api">
+      <h2>🌐 REST API</h2>
+      <h3>用户 API</h3>
+      <div class="code-block">
+POST   /api/users/register          <span class="c"># 注册</span>
+POST   /api/users/login             <span class="c"># 登录</span>
+POST   /api/users/bind-binance       <span class="c"># 绑定 Binance API Key</span>
+GET    /api/users/risk-config        <span class="c"># 获取风控配置</span>
+PUT    /api/users/risk-config        <span class="c"># 更新风控配置</span>
+POST   /api/users/upgrade-to-creator <span class="c"># 申请升级为创作者</span>
+      </div>
+      <h3>策略 API</h3>
+      <div class="code-block">
+GET    /api/strategies?filter=...    <span class="c"># 浏览策略广场</span>
+GET    /api/strategies/:id           <span class="c"># 策略详情</span>
+POST   /api/strategies/subscribe      <span class="c"># 订阅策略</span>
+POST   /api/strategies/:id/simulate  <span class="c"># 模拟订阅试跑</span>
+      </div>
+      <h3>创作者 API</h3>
+      <div class="code-block">
+POST   /api/creator/strategies       <span class="c"># 上架策略</span>
+POST   /api/creator/strategies/:id/backtest <span class="c"># 回测</span>
+GET    /api/creator/analytics        <span class="c"># 数据看板</span>
+GET    /api/creator/earnings         <span class="c"># 收入统计</span>
+      </div>
+      <h3>Agent API</h3>
+      <div class="code-block">
+POST   /api/agent/parse-strategy     <span class="c"># 自然语言解析</span>
+POST   /api/agent/chat               <span class="c"># 对话 Agent</span>
+GET    /api/agent/operations/:user_id <span class="c"># 操作日志</span>
+POST   /api/agent/pause              <span class="c"># 暂停 Agent</span>
+      </div>
+    </section>
+
+    <section id="sdk">
+      <h2>🐍 Python SDK</h2>
+      <p>创作者用代码模式上传策略的 SDK 示例：</p>
+      <div class="code-block">
+<span class="k">from</span> platform_sdk <span class="k">import</span> Strategy, Signal, Context
+
+<span class="k">class</span> <span class="key">DoubleMAStrategy</span>(Strategy):
+    <span class="s">"""双均线交叉策略"""</span>
+    name = <span class="s">"BTC 双均线"</span>
+    subscription_fee = <span class="n">50</span>  <span class="c"># USDT/月</span>
+
+    <span class="k">def</span> <span class="key">signal</span>(self, ctx: Context):
+        btc = ctx.symbol(<span class="s">"BTCUSDT"</span>)
+        ma5 = btc.sma(<span class="n">5</span>)
+        ma20 = btc.sma(<span class="n">20</span>)
+
+        <span class="k">if</span> ma5 > ma20 <span class="k">and</span> ctx.position == <span class="n">0</span>:
+            <span class="k">return</span> Signal.OPEN_LONG(
+                size=<span class="n">0.1</span>,
+                stop_loss=<span class="n">0.05</span>,
+                take_profit=<span class="n">0.15</span>
+            )
+        <span class="k">elif</span> ma5 < ma20 <span class="k">and</span> ctx.position > <span class="n">0</span>:
+            <span class="k">return</span> Signal.CLOSE_LONG()
+        <span class="k">return</span> <span class="k">None</span>
+      </div>
+    </section>
+
+    <section id="mcp">
+      <h2>🔌 MCP Server</h2>
+      <p>对话 Agent 调用的 MCP 工具集：</p>
+      <ul>
+        <li><code>search_strategies</code> - 按条件搜索策略</li>
+        <li><code>get_strategy_detail</code> - 查询策略详情</li>
+        <li><code>get_user_portfolio</code> - 查询用户持仓</li>
+        <li><code>get_user_pnl</code> - 查询用户收益</li>
+        <li><code>update_risk_config</code> - 修改风控参数</li>
+        <li><code>pause_agent</code> - 暂停 Agent</li>
+        <li><code>set_temporary_stop_loss</code> - 临时止损</li>
+        <li><code>explain_strategy_logic</code> - 解释策略逻辑</li>
+      </ul>
+    </section>
+
+    <section id="tech-stack">
+      <h2>⚙️ 技术栈</h2>
+      <ul>
+        <li><b>前端</b>：React 18 + TypeScript + TailwindCSS</li>
+        <li><b>移动端</b>：React Native</li>
+        <li><b>后端</b>：Node.js (NestJS) + Python (FastAPI)</li>
+        <li><b>AI Agent</b>：AgentScope 2.0（多租户 + 沙箱 + Agent as Service）</li>
+        <li><b>LLM</b>：GPT-4 / Claude / Qwen</li>
+        <li><b>数据库</b>：PostgreSQL + Redis + Elasticsearch + InfluxDB</li>
+        <li><b>消息</b>：Kafka</li>
+        <li><b>部署</b>：Kubernetes + Docker</li>
+        <li><b>监控</b>：Prometheus + Grafana + ELK</li>
+      </ul>
+    </section>
+
+    <section id="roadmap">
+      <h2>🗺️ 实现路线</h2>
+      <h3>M1-M3：MVP（自然语言模式）</h3>
+      <ul>
+        <li>用户/创作者注册 + Binance API 绑定</li>
+        <li>自然语言解析 Agent</li>
+        <li>策略执行 Agent + BinanceRouter + 手续费扣点</li>
+        <li>策略广场 + 订阅功能</li>
+        <li>创作者审核 + 分账</li>
+        <li>验证 PMF：100 付费 + 20 创作者</li>
+      </ul>
+      <h3>M4-M6：加可视化 + 代码模式</h3>
+      <ul>
+        <li>可视化配置（拖拽组件）</li>
+        <li>代码模式（沙箱 + 量化达人）</li>
+        <li>策略优化 Agent</li>
+        <li>普通用户升级为创作者流程</li>
+      </ul>
+      <h3>M7-M12：AI 升级 + 规模化</h3>
+      <ul>
+        <li>自然语言交互升级</li>
+        <li>智能策略推荐</li>
+        <li>Pro 订阅 + B 端 API</li>
+        <li>移动端 + 国际化</li>
+      </ul>
+    </section>
+
+    <section id="tech-selection">
+      <h2>🎯 技术选型</h2>
+      <h3>推荐方案：AgentScope 2.0 为主 + 关键模块自建</h3>
+      <p><b>AgentScope 用于</b>：多租户、Agent 编排、沙箱（仅代码模式）</p>
+      <p><b>必须自建的关键模块</b>：</p>
+      <ul>
+        <li>BinanceRouter（核心资产）</li>
+        <li>风控规则引擎（核心壁垒）</li>
+        <li>手续费扣点逻辑</li>
+        <li>用户 UI（不依赖 AgentScope）</li>
+      </ul>
+      <p>详见 <code>product/技术选型RFC.md</code> 和 <code>product/技术选型决策树.md</code></p>
+    </section>
+
+    <section id="poc">
+      <h2>🧪 PoC 代码</h2>
+      <p>最小可运行 Demo：创作者创建策略 + 普通用户订阅 + Agent 执行 + BinanceRouter + 平台手续费扣点。</p>
+      <div class="code-block">
+<span class="c"># 运行方式</span>
+pip install agentscope openai
+export OPENAI_API_KEY=sk-xxx
+python product/poc/agentscope_demo.py
+
+<span class="c"># 对照实现</span>
+python product/poc/langgraph_demo.py
+      </div>
+      <p>文件路径：</p>
+      <ul>
+        <li><code>product/poc/agentscope_demo.py</code>（918 行）- AgentScope 2.0 实现</li>
+        <li><code>product/poc/langgraph_demo.py</code>（336 行）- LangGraph 对照</li>
+        <li><code>product/poc/对比.md</code>（370 行）- 代码量/可读性/生产就绪度对比</li>
+      </ul>
+    </section>
+
+    <section id="faq">
+      <h2>❓ FAQ</h2>
+      <h3>为什么选 AgentScope 而不是 LangGraph？</h3>
+      <p>AgentScope 原生支持多租户 + 沙箱 + 部署，省 2-3 月基建。LangGraph 更灵活但全要自建。详细对比见 <code>product/poc/对比.md</code>。</p>
+      <h3>沙箱是必需的吗？</h3>
+      <p>只 10% 量化达人用代码模式需要沙箱。90% 用户用自然语言/可视化（YAML 配置），无需沙箱。</p>
+      <h3>平台如何不接触用户资金？</h3>
+      <p>用户用 Binance API Key 授权平台代下单（只交易权限，不提现）。资金始终在用户 Binance 账户。</p>
+      <h3>如何保证 Agent 不乱下单？</h3>
+      <p>3 层风控（用户/策略/平台）每笔交易前必检。Agent 不能修改用户风控参数，所有决策可审计。</p>
+    </section>
+
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <div class="mini-robot" style="width:28px;height:28px"><div class="mini-head" style="width:28px;height:28px"><div class="mini-face" style="border-radius:9px"><div class="mini-eye left" style="width:6px;height:6px;top:9px;left:5px"></div><div class="mini-eye right" style="width:6px;height:6px;top:9px;right:5px"></div><div class="mini-mouth" style="bottom:6px;width:8px"></div></div></div></div>
+          <span class="logo-text">AI Agent 策略广场</span>
+        </div>
+        <p class="footer-desc">创作者发布策略，用户订阅，Agent 自动执行，平台赚手续费。资金不离 Binance，安全透明可审计。</p>
+      </div>
+      <div class="footer-col"><h4>产品</h4><ul><li><a href="features.html">功能介绍</a></li><li><a href="pricing.html">定价</a></li><li><a href="docs.html">技术文档</a></li></ul></div>
+      <div class="footer-col"><h4>角色</h4><ul><li><a href="index.html">普通用户</a></li><li><a href="creators.html">创作者</a></li><li><a href="docs.html">开发者</a></li></ul></div>
+      <div class="footer-col"><h4>资源</h4><ul><li><a href="docs.html">文档</a></li><li><a href="docs.html">API 参考</a></li><li><a href="docs.html">示例</a></li></ul></div>
+      <div class="footer-col"><h4>公司</h4><ul><li><a href="#">关于我们</a></li><li><a href="#">联系</a></li><li><a href="#">招聘</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 AI Agent 策略广场. All rights reserved.</span><span>资金不离 Binance · 不接触用户资金 · 风险自担</span></div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

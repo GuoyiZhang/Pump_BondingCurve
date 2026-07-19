@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>功能 · AI Agent 策略广场</title>
+  <meta name="description" content="3 种策略创建模式 + 5 类 AI Agent + 3 层风控 + BinanceRouter 统一接入">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="ambient">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb4"></div>
+</div>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <div class="mini-robot"><div class="mini-head"><div class="mini-face"><div class="mini-eye left"></div><div class="mini-eye right"></div><div class="mini-mouth"></div></div><div class="mini-antenna"></div></div></div>
+    <span class="logo-text">AI Agent 策略广场</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">首页</a>
+    <a href="features.html" class="nav-link">功能</a>
+    <a href="creators.html" class="nav-link">创作者</a>
+    <a href="pricing.html" class="nav-link">定价</a>
+    <a href="docs.html" class="nav-link">文档</a>
+  </div>
+  <div class="nav-cta">
+    <a href="pricing.html" class="btn btn-ghost btn-sm">登录</a>
+    <a href="pricing.html" class="btn btn-primary btn-sm">免费注册</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="section" style="padding-top:140px">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">核心功能</span>
+      <h1>3 种创建模式 + 5 类 Agent</h1>
+      <p class="lead" style="margin:0 auto">创作者用任意方式创建策略，AI Agent 帮用户在 Binance 7×24 自动执行</p>
+    </div>
+  </div>
+</section>
+
+<!-- 三种创建模式 -->
+<section class="section-sm">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">策略创建</span>
+      <h2>创作者 3 种方式创建策略</h2>
+      <p>从普通人到量化达人，全人群覆盖</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card" style="border-color:rgba(107,140,255,0.3)">
+        <div class="flex items-center gap-sm" style="margin-bottom:12px">
+          <span class="badge">MVP 优先</span>
+          <span class="text-muted" style="font-size:12px">90% 用户</span>
+        </div>
+        <div class="card-icon">💬</div>
+        <h3 class="card-title">自然语言描述</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:16px">用中文描述策略，AI 解析为可执行 YAML</p>
+        <div class="code-block" style="font-size:12px">
+<span class="c">// 创作者输入</span>
+<span class="s">"BTC 跌 5% 就帮我定投 100U"</span>
+
+<span class="c">// AI 解析为</span>
+<span class="key">trigger</span>: PRICE_DROP 5%
+<span class="key">action</span>: DCA 100U
+<span class="key">stop_loss</span>: 10%
+        </div>
+      </div>
+      <div class="card">
+        <div class="flex items-center gap-sm" style="margin-bottom:12px">
+          <span class="badge warn">M4-M6</span>
+          <span class="text-muted" style="font-size:12px">小白用户</span>
+        </div>
+        <div class="card-icon">🎨</div>
+        <h3 class="card-title">可视化配置</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:16px">拖拽组件配置策略，所见即所得</p>
+        <div style="font-size:12px;color:var(--fg-soft);line-height:2">
+          <div>▣ 拖拽：触发条件 + 动作 + 风控</div>
+          <div>⚙️ 配置：参数 + 订阅费</div>
+          <div>👁️ 预览：YAML 实时生成</div>
+          <div>✅ 上架：审核后展示</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="flex items-center gap-sm" style="margin-bottom:12px">
+          <span class="badge warn">M4-M6</span>
+          <span class="text-muted" style="font-size:12px">10% 量化达人</span>
+        </div>
+        <div class="card-icon">💻</div>
+        <h3 class="card-title">写代码上传</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:16px">Python/DSL 上传，沙箱执行 + 安全审核</p>
+        <div class="code-block" style="font-size:12px">
+<span class="k">def</span> <span class="key">signal</span>(context):
+    ma5 = btc.sma(<span class="n">5</span>)
+    ma20 = btc.sma(<span class="n">20</span>)
+    <span class="k">if</span> ma5 > ma20:
+        <span class="k">return</span> BUY
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 类 Agent -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">AI Agent</span>
+      <h2>5 类 Agent 各司其职</h2>
+      <p>从策略解析到执行优化，全流程 AI 自动化</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-icon">📝</div>
+        <h3 class="card-title">① 自然语言解析 Agent</h3>
+        <p class="text-soft" style="font-size:14px"><b>服务对象：</b>创作者</p>
+        <p class="text-soft" style="font-size:14px;margin-top:8px"><b>职责：</b>中文 → 结构化 YAML 策略 + 风险提示</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎨</div>
+        <h3 class="card-title">② 可视化配置 Agent</h3>
+        <p class="text-soft" style="font-size:14px"><b>服务对象：</b>创作者</p>
+        <p class="text-soft" style="font-size:14px;margin-top:8px"><b>职责：</b>辅助拖拽 + 参数校验 + 冲突检测</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <h3 class="card-title">③ 代码审核 Agent</h3>
+        <p class="text-soft" style="font-size:14px"><b>服务对象：</b>创作者 + 平台</p>
+        <p class="text-soft" style="font-size:14px;margin-top:8px"><b>职责：</b>审核代码安全 + 回测 + 上架审核</p>
+      </div>
+      <div class="card" style="border-color:rgba(107,140,255,0.4);background:rgba(107,140,255,0.04)">
+        <div class="card-icon">⚙️</div>
+        <h3 class="card-title">④ 策略执行 Agent ⭐</h3>
+        <p class="text-soft" style="font-size:14px"><b>服务对象：</b>普通用户</p>
+        <p class="text-soft" style="font-size:14px;margin-top:8px"><b>职责：</b>7×24 监控 + 触发 + 风控 + 调 BinanceRouter</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3 class="card-title">⑤ 策略优化 Agent</h3>
+        <p class="text-soft" style="font-size:14px"><b>服务对象：</b>创作者</p>
+        <p class="text-soft" style="font-size:14px;margin-top:8px"><b>职责：</b>定期分析策略表现 + 建议调参</p>
+      </div>
+      <div class="card" style="background:rgba(52,211,153,0.04);border-color:rgba(52,211,153,0.2)">
+        <div class="card-icon" style="background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.2)">🔗</div>
+        <h3 class="card-title">共享 Skill 层</h3>
+        <p class="text-soft" style="font-size:14px"><b>包含：</b>BinanceRouter / 3 层风控 / 通知 / 审计</p>
+        <p class="text-soft" style="font-size:14px;margin-top:8px"><b>说明：</b>所有 Agent 共享，框架无关</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 执行路径 -->
+<section class="section-sm">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">执行路径</span>
+      <h2>Agent 调 BinanceRouter 下单</h2>
+      <p>统一接入 Binance API，限流 + 重试 + 降级 + 手续费扣点</p>
+    </div>
+    <div class="flow" style="justify-content:center">
+      <div class="flow-step">
+        <div class="flow-step-icon">📡</div>
+        <div class="flow-step-title">策略触发</div>
+        <div class="flow-step-desc">监控条件</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">🛡️</div>
+        <div class="flow-step-title">3 层风控</div>
+        <div class="flow-step-desc">用户/策略/平台</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">🤖</div>
+        <div class="flow-step-title">执行 Agent</div>
+        <div class="flow-step-desc">调 Router</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">🔗</div>
+        <div class="flow-step-title">BinanceRouter</div>
+        <div class="flow-step-desc">限流+重试</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">💰</div>
+        <div class="flow-step-title">成交</div>
+        <div class="flow-step-desc">记录手续费</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 层风控 -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <span class="kicker">风控体系</span>
+      <h2>3 层风控守门</h2>
+      <p>用户层 + 策略层 + 平台层，每笔交易前必检</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-icon">👤</div>
+        <h3 class="card-title">① 用户层风控</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:12px">用户自定义风险偏好 + 仓位/杠杆/止损</p>
+        <ul style="font-size:13px;color:var(--fg-soft);line-height:1.9">
+          <li>最大仓位限制</li>
+          <li>最大杠杆限制</li>
+          <li>单日亏损限制</li>
+          <li>黑白名单币种</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3 class="card-title">② 策略层风控</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:12px">策略自带风控规则，触发后自动暂停</p>
+        <ul style="font-size:13px;color:var(--fg-soft);line-height:1.9">
+          <li>最大回撤限制</li>
+          <li>信号频率异常</li>
+          <li>策略连续亏损</li>
+          <li>策略下架机制</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.2)">🛡️</div>
+        <h3 class="card-title">③ 平台层风控</h3>
+        <p class="text-soft" style="font-size:14px;margin-bottom:12px">全局红线，强制生效</p>
+        <ul style="font-size:13px;color:var(--fg-soft);line-height:1.9">
+          <li>平台黑名单币种</li>
+          <li>异常波动暂停</li>
+          <li>API 异常保护</li>
+          <li>全局熔断机制</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 安全红线 -->
+<section class="section-sm">
+  <div class="container">
+    <div class="card" style="background:linear-gradient(135deg,rgba(248,113,113,0.05),rgba(167,139,250,0.04));border-color:rgba(248,113,113,0.2)">
+      <div class="flex items-center gap-md" style="flex-wrap:wrap">
+        <div style="font-size:32px">🚫</div>
+        <div>
+          <h3 style="margin:0">安全红线</h3>
+          <p class="text-soft" style="font-size:14px;margin-top:4px">平台不接触用户资金（API Key 只交易权限）· 不保证收益 · 不向保守用户推荐高风险策略 · 不上架未审核策略</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="container">
+    <div class="card text-center" style="padding:60px 40px;background:linear-gradient(135deg,rgba(107,140,255,0.08),rgba(167,139,250,0.05));border-color:rgba(107,140,255,0.3)">
+      <span class="kicker">体验 Agent</span>
+      <h2 style="margin-bottom:16px">3 种方式创建策略 + 5 类 Agent</h2>
+      <p class="lead" style="margin:0 auto 32px">从创建到执行，全流程 AI 自动化</p>
+      <div class="flex gap-md" style="justify-content:center;flex-wrap:wrap">
+        <a href="pricing.html" class="btn btn-primary btn-lg">立即体验</a>
+        <a href="creators.html" class="btn btn-ghost btn-lg">成为创作者</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <div class="mini-robot" style="width:28px;height:28px"><div class="mini-head" style="width:28px;height:28px"><div class="mini-face" style="border-radius:9px"><div class="mini-eye left" style="width:6px;height:6px;top:9px;left:5px"></div><div class="mini-eye right" style="width:6px;height:6px;top:9px;right:5px"></div><div class="mini-mouth" style="bottom:6px;width:8px"></div></div></div></div>
+          <span class="logo-text">AI Agent 策略广场</span>
+        </div>
+        <p class="footer-desc">创作者发布策略，用户订阅，Agent 自动执行，平台赚手续费。资金不离 Binance，安全透明可审计。</p>
+      </div>
+      <div class="footer-col"><h4>产品</h4><ul><li><a href="features.html">功能介绍</a></li><li><a href="pricing.html">定价</a></li><li><a href="docs.html">技术文档</a></li></ul></div>
+      <div class="footer-col"><h4>角色</h4><ul><li><a href="index.html">普通用户</a></li><li><a href="creators.html">创作者</a></li><li><a href="docs.html">开发者</a></li></ul></div>
+      <div class="footer-col"><h4>资源</h4><ul><li><a href="docs.html">文档</a></li><li><a href="docs.html">API 参考</a></li><li><a href="docs.html">示例</a></li></ul></div>
+      <div class="footer-col"><h4>公司</h4><ul><li><a href="#">关于我们</a></li><li><a href="#">联系</a></li><li><a href="#">招聘</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>© 2026 AI Agent 策略广场. All rights reserved.</span><span>资金不离 Binance · 不接触用户资金 · 风险自担</span></div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
