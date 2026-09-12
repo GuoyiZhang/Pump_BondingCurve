@@ -1,0 +1,674 @@
+<meta charset="UTF-8">
+<title>o1.exchange v3 Console</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+<style>
+  body { padding-inline: 24px; padding-block: 56px; }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  /* ---------- topbar ---------- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    padding-bottom: 20px; margin-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-width: 0; }
+  .back-link {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.76rem; font-weight: 600;
+    letter-spacing: 0.03em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none; white-space: nowrap;
+  }
+  .back-link:hover { color: var(--accent); }
+  .crumb-divider { width: 1px; height: 14px; background: var(--border); flex-shrink: 0; }
+  .current-protocol {
+    font-family: "Chakra Petch", ui-sans-serif, sans-serif; font-weight: 600;
+    font-size: 1rem; color: var(--ink); white-space: nowrap;
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  /* ---------- hero ---------- */
+  .hero { margin-bottom: 40px; }
+  .hero .contract-line { font-size: 0.78rem; color: var(--muted); margin-top: 14px; }
+
+  .hero h1 {
+    font-family: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 4.6vw, 2.9rem);
+    line-height: 1.08;
+    letter-spacing: -0.005em;
+    margin: 0 0 14px;
+    text-wrap: balance;
+    max-width: 18ch;
+    text-transform: uppercase;
+  }
+  .hero .sub {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.86rem;
+    color: var(--muted);
+    max-width: 52ch;
+    line-height: 1.55;
+  }
+  .hero .sub .mono-accent { color: var(--accent); }
+
+  /* ---------- readout ---------- */
+  .readout {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin: 32px 0;
+  }
+  @media (max-width: 620px) { .readout { grid-template-columns: repeat(2, 1fr); } }
+  .readout .cell { background: var(--surface); padding: 16px 18px; }
+  .readout .cell .k { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); }
+  .readout .cell .v { font-size: 1.15rem; margin-top: 5px; font-weight: 600; }
+  .readout .cell .v.pending { color: var(--faint); font-weight: 400; }
+
+  /* ---------- form ---------- */
+  .form-surface {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px 34px;
+    position: relative;
+  }
+  .form-surface::before {
+    content: ""; position: absolute; top: -1px; left: -1px; width: 18px; height: 18px;
+    border-top: 2px solid var(--accent); border-left: 2px solid var(--accent);
+  }
+  .form-surface + .form-surface { margin-top: 16px; }
+  .form-surface h2 {
+    font-family: "Chakra Petch", ui-sans-serif, sans-serif; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.03em;
+    font-size: 1.05rem; margin: 0 0 22px; color: var(--ink);
+  }
+
+  .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.01em; }
+  .field .hint { font-size: 0.72rem; color: var(--muted); font-weight: 400; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+
+  input[type="text"], input[type="url"], input[type="number"], textarea {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.88rem; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 2px; padding: 11px 13px; width: 100%;
+  }
+  input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  textarea { resize: vertical; min-height: 64px; font-family: "IBM Plex Mono", monospace; }
+
+  .salt-row { display: flex; align-items: center; gap: 8px; }
+  .salt-row .mono {
+    flex: 1; overflow-x: auto; white-space: nowrap; font-size: 0.76rem;
+    color: var(--muted); padding: 9px 11px; background: var(--surface-2); border-radius: 2px;
+  }
+
+  .toggle-row { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; margin-bottom: 18px; }
+  .toggle-row input { width: 16px; height: 16px; }
+
+  details.advanced { border-top: 1px dashed var(--border); margin-top: 6px; padding-top: 16px; }
+  details.advanced summary { cursor: pointer; font-size: 0.78rem; font-weight: 600; color: var(--muted); list-style: none; }
+  details.advanced summary::-webkit-details-marker { display: none; }
+  details.advanced summary::before { content: "+ "; color: var(--accent); }
+  details.advanced[open] summary::before { content: "– "; color: var(--accent); }
+  details.advanced .adv-body { padding-top: 16px; }
+
+  .cta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--border);
+  }
+  .cost-line { font-size: 0.8rem; color: var(--muted); }
+  .cost-line .mono { color: var(--ink); font-weight: 700; }
+
+  .steps { display: flex; flex-direction: column; }
+  .step { display: flex; align-items: flex-start; gap: 12px; font-size: 0.85rem; padding: 11px 0; border-top: 1px solid var(--border); }
+  .step:first-child { border-top: none; }
+  .step .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--faint); margin-top: 5px; flex-shrink: 0; }
+  .step.done .dot { background: var(--good); }
+  .step.active .dot { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .step.fail .dot { background: var(--bad); }
+  .step .body { flex: 1; }
+  .step .title { font-weight: 600; }
+  .step .detail { color: var(--muted); font-size: 0.8rem; margin-top: 3px; word-break: break-word; }
+
+  .footnote { font-size: 0.74rem; color: var(--faint); text-align: center; margin-top: 40px; line-height: 1.6; }
+</style>
+
+<div class="page">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="back-link" href="index.html">← All protocols</a>
+      <span class="crumb-divider"></span>
+      <span class="current-protocol">o1.exchange v3</span>
+    </div>
+    <div class="topbar-right">
+      <div class="chain-switch">
+        <button class="chain-btn" id="chainBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span class="chain-dot" id="chainDot"></span>
+          <span id="chainLabel">Arc Public Testnet</span>
+          <span class="caret">▾</span>
+        </button>
+        <div class="chain-menu" id="chainMenu" hidden>
+          <button class="chain-item active" id="chainItemTestnet" type="button" data-chain-id="0x4cef52"><span class="dot"></span> Arc Public Testnet</button>
+          <button class="chain-item" id="chainItemMainnet" type="button" data-chain-id="0x13b2"><span class="dot"></span> Arc Mainnet <span class="tag">internal</span></button>
+        </div>
+      </div>
+      <button class="primary" id="connectBtn" type="button">Connect wallet</button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h1>Launch tokens, straight from the factory.</h1>
+    <div class="sub">A direct console onto <span class="mono-accent">createLaunch</span> — no protocol frontend in between. Wired to <span class="mono-accent">o1.exchange v3</span> on Arc.</div>
+    <div class="contract-line">RWAERC20LaunchpadFactory <span class="mono" id="factoryAddrShort"></span></div>
+  </div>
+
+  <div id="internalChainBanner" class="banner warn" hidden>
+    <span>Connected to Arc Mainnet (chainId 5042) — this is an internal pre-mainnet chain reachable only from the corporate network/VPN. Arc's public mainnet has not launched yet; external users cannot use this option.</span>
+  </div>
+  <div id="networkBanner" class="banner warn" hidden>
+    <span>Wrong network — switch MetaMask to <span id="targetChainName">Arc Public Testnet</span> to launch.</span>
+    <button class="small" id="switchNetBtn" type="button">Switch network</button>
+  </div>
+  <div id="noWalletBanner" class="banner warn" hidden>
+    <span>No injected wallet found in this tab. If MetaMask is installed, open this page in a normal browser tab (not an embedded preview) and try again.</span>
+  </div>
+
+  <div class="readout">
+    <div class="cell">
+      <div class="k">Creation</div>
+      <div class="v pending" id="statCreation">connect to load</div>
+    </div>
+    <div class="cell">
+      <div class="k">Native fee</div>
+      <div class="v pending num" id="statFee">connect to load</div>
+    </div>
+    <div class="cell">
+      <div class="k">Tick spacing</div>
+      <div class="v pending num" id="statTick">connect to load</div>
+    </div>
+    <div class="cell">
+      <div class="k">Config version</div>
+      <div class="v pending num" id="statConfig">connect to load</div>
+    </div>
+  </div>
+
+  <div class="form-surface" id="formPanel">
+    <h2>New token</h2>
+
+    <div class="row2">
+      <div class="field">
+        <label for="tokenName">Name</label>
+        <input type="text" id="tokenName" value="Test Token 2" maxlength="64">
+      </div>
+      <div class="field">
+        <label for="tokenSymbol">Symbol</label>
+        <input type="text" id="tokenSymbol" value="TEST2" maxlength="12">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="tokenDesc">Description</label>
+      <textarea id="tokenDesc">Testing on Arc Testnet</textarea>
+    </div>
+
+    <div class="field">
+      <label for="tokenImage">Image URL <span class="hint">— optional, ipfs:// or https://</span></label>
+      <input type="url" id="tokenImage" value="ipfs://bafybeibvarw4tqwyorkstkbageijx4clqisg2fbtvgzwfqatubw4wen7vm" placeholder="ipfs://... or https://...">
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label for="tokenWebsite">Website <span class="hint">— optional</span></label>
+        <input type="url" id="tokenWebsite" value="https://test.com" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label for="tokenTwitter">Twitter / X <span class="hint">— optional</span></label>
+        <input type="url" id="tokenTwitter" value="https://x.com/test" placeholder="https://x.com/...">
+      </div>
+    </div>
+    <div class="field">
+      <label for="tokenTelegram">Telegram <span class="hint">— optional</span></label>
+      <input type="url" id="tokenTelegram" value="https://t.me/test" placeholder="https://t.me/...">
+    </div>
+
+    <div class="toggle-row">
+      <input type="checkbox" id="metaEditable" checked>
+      <label for="metaEditable">Metadata editable after launch</label>
+    </div>
+
+    <details class="advanced">
+      <summary>Advanced — quote token, salt, deadline</summary>
+      <div class="adv-body">
+        <div class="field">
+          <label for="quoteToken">Quote token</label>
+          <input type="text" class="mono" id="quoteToken" value="0x3600000000000000000000000000000000000000">
+          <div class="hint">ERC-20 USDC (6 decimals) — the only quote registered on this factory so far.</div>
+        </div>
+        <div class="field">
+          <label>Creator salt <span class="hint">— mined client-side so the deployed address ends in the required 0x01 byte</span></label>
+          <div class="salt-row">
+            <span class="mono" id="saltDisplay">connect wallet to mine a salt</span>
+            <button class="small ghost" id="remineBtn" type="button" disabled>Re-mine</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="deadlineMinutes">Deadline <span class="hint">— minutes from submit</span></label>
+          <input type="number" id="deadlineMinutes" value="20" min="1" max="120">
+        </div>
+      </div>
+    </details>
+
+    <div class="cta-row">
+      <div class="cost-line">Cost: <span class="mono" id="costLine">— native USDC</span> + gas</div>
+      <button class="primary" id="launchBtn" type="button" disabled>Connect wallet to launch</button>
+    </div>
+  </div>
+
+  <div class="form-surface" id="progressPanel" hidden>
+    <h2>Launch progress</h2>
+    <div class="steps" id="steps"></div>
+  </div>
+
+  <div class="footnote">Calls <span class="mono">createLaunch</span> directly on the factory. Testnet only — no mainnet funds involved.<br>Each chain plugs in its own factory + launch adapter; the console and wallet flow stay the same.</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // Same RWAERC20LaunchpadFactory address on both chains (confirmed via O1ExchangeV3Enum in
+  // web3-framework-blockchain-parsers — ARC and ARCTEST share this address byte-for-byte).
+  var FACTORY = "0xeE3E862Efde6DCd6DF5648AF0E2731B9D1dF4605";
+  var LAUNCHED_TOPIC0 = "0x207384e895174175cc774fe7f7457b37c382f27ebf53d37d5257b862f80eaf9c";
+
+  // Arc Mainnet (chainId 5042, platformId=301/PlatformEnum.ARC) is NOT Arc's officially
+  // documented public mainnet — docs.arc.io states "Arc is currently available on Testnet
+  // only" as of 2026-09-12. This chain is an internal pre-mainnet reachable only via the
+  // corporate RPC mirror below; MetaMask on an external network cannot reach it. Kept here
+  // for internal testing only — see internalChainBanner.
+  var CHAINS = {
+    "0x4cef52": {
+      label: "Arc Public Testnet",
+      rpcUrl: "https://rpc.testnet.arc.io",
+      explorer: "https://testnet.arcscan.app",
+      nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+      internal: false
+    },
+    "0x13b2": {
+      label: "Arc Mainnet",
+      rpcUrl: "https://arc-fullnode.snali.cc",
+      explorer: null,
+      nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+      internal: true
+    }
+  };
+  var DEFAULT_CHAIN_ID_HEX = "0x4cef52";
+  var targetChainId = DEFAULT_CHAIN_ID_HEX; // chain the "Switch network" banner button targets
+  var activeChainId = null; // chain the connected wallet actually reports, once known
+
+  var ABI = [
+    "function createLaunch(tuple(string tokenName,string tokenSymbol,string tokenContractURI,bytes32 creatorSalt,address quoteToken,uint64 expectedConfigVersion,uint64 deadline,bool metadataEditable,string[] metadataKeys,string[] metadataValues) launchParams) payable returns (address token, bytes32 poolId)",
+    "function launchTokenBytecodeHash(tuple(string tokenName,string tokenSymbol,string tokenContractURI,bytes32 creatorSalt,address quoteToken,uint64 expectedConfigVersion,uint64 deadline,bool metadataEditable,string[] metadataKeys,string[] metadataValues) launchParams) view returns (bytes32)",
+    "function nativeLaunchFee() view returns (uint256)",
+    "function launchCreationEnabled() view returns (bool)",
+    "function configVersion() view returns (uint64)",
+    "function tickSpacing() view returns (int24)",
+    "function tokenDeployer() view returns (address)",
+    "function quoteConfig(address) view returns (bool registered, uint8 quoteDecimals, int24 startTickToken0Frame)",
+    "event Launched(address indexed token, bytes32 indexed poolId, address indexed originalCreator, address quoteToken, uint256 launchSupply, int24 tickSpacing)",
+    "error EmptyTokenNameOrSymbol()",
+    "error InvalidConfig()",
+    "error InvalidQuoteToken()",
+    "error InvalidNativeLaunchFeePayment()",
+    "error InvalidTokenAddressSuffix(address predictedToken)",
+    "error LaunchCreationDisabled()",
+    "error LaunchExpired(uint64 deadline)",
+    "error LaunchSaltUsed(bytes32 scopedSalt)",
+    "error MisalignedStartTick()",
+    "error QuoteNotRegistered()",
+    "error StaleConfig(uint64 expected, uint64 actual)",
+    "error StaleQuoteRevision(address quoteToken, uint64 expected, uint64 actual)",
+    "error ReentrancyGuardReentrantCall()"
+  ];
+
+  var iface = new ethers.utils.Interface(ABI);
+
+  // NOTE: the artifact sandbox's CSP blocks page-initiated fetch/XHR to arbitrary hosts,
+  // so a plain JsonRpcProvider(RPC_URL) read from the page itself cannot reach the chain.
+  // All reads and writes below go through window.ethereum (the wallet extension's own
+  // relay), which is not subject to the page's fetch CSP, so nothing is read until a
+  // wallet is connected.
+  var readContract = null;
+  var writeContract = null;
+  var connectedAddress = null;
+  var minedSalt = null;
+  var lastBytecodeHash = null;
+  var lastBytecodeHashKey = null;
+
+  var el = {};
+  ["connectBtn","networkBanner","switchNetBtn","noWalletBanner","factoryAddrShort",
+   "internalChainBanner","targetChainName",
+   "chainBtn","chainMenu","chainDot","chainLabel","chainItemTestnet","chainItemMainnet",
+   "statCreation","statFee","statTick","statConfig",
+   "tokenName","tokenSymbol","tokenDesc","tokenImage",
+   "tokenWebsite","tokenTwitter","tokenTelegram","metaEditable",
+   "quoteToken","saltDisplay","remineBtn","deadlineMinutes",
+   "costLine","launchBtn","progressPanel","steps","formPanel"].forEach(function (id) {
+    el[id] = document.getElementById(id);
+  });
+
+  el.factoryAddrShort.textContent = FACTORY;
+
+  function short(addr) { return addr.slice(0, 6) + "…" + addr.slice(-4); }
+  function fmtUsdc(bn) { return ethers.utils.formatUnits(bn, 18); }
+
+  function loadStats() {
+    if (!readContract) return;
+    Promise.all([
+      readContract.launchCreationEnabled(),
+      readContract.nativeLaunchFee(),
+      readContract.tickSpacing(),
+      readContract.configVersion()
+    ]).then(function (r) {
+      var enabled = r[0], fee = r[1], tick = r[2], cfg = r[3];
+      el.statCreation.textContent = enabled ? "Enabled" : "Disabled";
+      el.statCreation.classList.remove("pending");
+      el.statCreation.style.color = enabled ? "var(--good)" : "var(--bad)";
+      el.statFee.textContent = fmtUsdc(fee) + " USDC";
+      el.statFee.classList.remove("pending");
+      el.statTick.textContent = tick.toString();
+      el.statTick.classList.remove("pending");
+      el.statConfig.textContent = cfg.toString();
+      el.statConfig.classList.remove("pending");
+      el.costLine.textContent = fmtUsdc(fee) + " USDC";
+      if (!enabled) showBanner("bad", "Launch creation is currently disabled on this factory.");
+    }).catch(function (e) {
+      console.error(e);
+      showBanner("bad", "Could not read factory state from the wallet's RPC connection.");
+    });
+  }
+
+  function showBanner(kind, text) {
+    var b = document.createElement("div");
+    b.className = "banner " + kind;
+    b.textContent = text;
+    el.formPanel.parentNode.insertBefore(b, el.formPanel);
+  }
+
+  function hasInjectedWallet() { return typeof window.ethereum !== "undefined"; }
+
+  function refreshLaunchButtonState() {
+    var ready = !!writeContract && !!minedSalt;
+    el.launchBtn.disabled = !ready;
+    el.launchBtn.textContent = writeContract ? (minedSalt ? "Launch token" : "Mining salt…") : "Connect wallet to launch";
+  }
+
+  function updateChainMenuActive(chainIdHex) {
+    el.chainItemTestnet.classList.toggle("active", chainIdHex === "0x4cef52");
+    el.chainItemMainnet.classList.toggle("active", chainIdHex === "0x13b2");
+  }
+
+  function checkNetwork(chainIdHex) {
+    var chain = CHAINS[chainIdHex];
+    el.internalChainBanner.hidden = !(chain && chain.internal);
+    if (chain) {
+      activeChainId = chainIdHex;
+      targetChainId = chainIdHex;
+      el.networkBanner.hidden = true;
+      el.chainBtn.classList.remove("wrong-network");
+      el.chainLabel.textContent = chain.label;
+      updateChainMenuActive(chainIdHex);
+    } else {
+      activeChainId = null;
+      el.networkBanner.hidden = false;
+      el.chainBtn.classList.add("wrong-network");
+      el.chainLabel.textContent = "Wrong network";
+      el.targetChainName.textContent = CHAINS[targetChainId].label;
+    }
+  }
+
+  function switchToChain(chainIdHex) {
+    var chain = CHAINS[chainIdHex];
+    targetChainId = chainIdHex;
+    return window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: chainIdHex }] })
+      .catch(function (err) {
+        if (err && err.code === 4902) {
+          var addParams = {
+            chainId: chainIdHex,
+            chainName: chain.label,
+            nativeCurrency: chain.nativeCurrency,
+            rpcUrls: [chain.rpcUrl]
+          };
+          if (chain.explorer) addParams.blockExplorerUrls = [chain.explorer];
+          return window.ethereum.request({ method: "wallet_addEthereumChain", params: [addParams] })
+            .catch(function (e2) { console.error(e2); });
+        }
+        console.error(err);
+      });
+  }
+
+  el.switchNetBtn.addEventListener("click", function () { switchToChain(targetChainId); });
+
+  el.chainBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var willOpen = el.chainMenu.hidden;
+    el.chainMenu.hidden = !willOpen;
+    el.chainBtn.setAttribute("aria-expanded", String(willOpen));
+  });
+  [el.chainItemTestnet, el.chainItemMainnet].forEach(function (item) {
+    item.addEventListener("click", function () {
+      el.chainMenu.hidden = true;
+      el.chainBtn.setAttribute("aria-expanded", "false");
+      var chainIdHex = item.getAttribute("data-chain-id");
+      targetChainId = chainIdHex;
+      if (connectedAddress) switchToChain(chainIdHex);
+    });
+  });
+  document.addEventListener("click", function (e) {
+    if (!el.chainMenu.hidden && !el.chainMenu.contains(e.target) && e.target !== el.chainBtn) {
+      el.chainMenu.hidden = true;
+      el.chainBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !el.chainMenu.hidden) {
+      el.chainMenu.hidden = true;
+      el.chainBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  el.connectBtn.addEventListener("click", function () {
+    if (!hasInjectedWallet()) { el.noWalletBanner.hidden = false; return; }
+    window.ethereum.request({ method: "eth_requestAccounts" }).then(function (accounts) {
+      connectedAddress = ethers.utils.getAddress(accounts[0]);
+      el.connectBtn.textContent = short(connectedAddress);
+      el.connectBtn.disabled = true;
+      var web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+      signerReady(web3Provider);
+
+      window.ethereum.request({ method: "eth_chainId" }).then(checkNetwork);
+      window.ethereum.on && window.ethereum.on("chainChanged", checkNetwork);
+
+      el.remineBtn.disabled = false;
+      loadStats();
+      mineSalt();
+    }).catch(function (e) {
+      console.error(e);
+      showBanner("bad", "Wallet connection was rejected or failed.");
+    });
+  });
+
+  function signerReady(web3Provider) {
+    var signer = web3Provider.getSigner();
+    readContract = new ethers.Contract(FACTORY, ABI, web3Provider);
+    writeContract = new ethers.Contract(FACTORY, ABI, signer);
+  }
+
+  function buildLaunchParams(creatorSaltHex) {
+    return [
+      el.tokenName.value.trim(),
+      el.tokenSymbol.value.trim(),
+      buildContractUri(),
+      creatorSaltHex,
+      ethers.utils.getAddress(el.quoteToken.value.trim()),
+      0, 0,
+      el.metaEditable.checked,
+      [], []
+    ];
+  }
+
+  function buildContractUri() {
+    var meta = {
+      name: el.tokenName.value.trim(),
+      symbol: el.tokenSymbol.value.trim(),
+      description: el.tokenDesc.value.trim(),
+      standard: "ERC20",
+      launchpad: "o1 Launchpad",
+      launchpadUrl: "https://launch.o1.exchange"
+    };
+    var links = {};
+    if (el.tokenWebsite.value.trim()) links.website = el.tokenWebsite.value.trim();
+    if (el.tokenTwitter.value.trim()) links.twitter = el.tokenTwitter.value.trim();
+    if (el.tokenTelegram.value.trim()) links.telegram = el.tokenTelegram.value.trim();
+    if (Object.keys(links).length) meta.links = links;
+    if (el.tokenImage.value.trim()) meta.image = el.tokenImage.value.trim();
+    return "data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(meta))));
+  }
+
+  function bytecodeHashCacheKey() {
+    return [el.tokenName.value, el.tokenSymbol.value, el.tokenDesc.value, el.tokenImage.value,
+            el.tokenWebsite.value, el.tokenTwitter.value, el.tokenTelegram.value, el.metaEditable.checked].join("|");
+  }
+
+  function mineSalt() {
+    if (!connectedAddress || !readContract) return;
+    el.saltDisplay.textContent = "mining…";
+    minedSalt = null;
+    refreshLaunchButtonState();
+
+    var key = bytecodeHashCacheKey();
+    var fetchHash = (key === lastBytecodeHashKey && lastBytecodeHash)
+      ? Promise.resolve(lastBytecodeHash)
+      : readContract.launchTokenBytecodeHash(buildLaunchParams(ethers.constants.HashZero)).then(function (h) {
+          lastBytecodeHash = h; lastBytecodeHashKey = key; return h;
+        });
+
+    Promise.all([fetchHash, readContract.tokenDeployer()]).then(function (r) {
+      var bytecodeHash = r[0], deployer = r[1];
+      var coder = ethers.utils.defaultAbiCoder;
+      for (var i = 0; i < 20000; i++) {
+        var candidate = ethers.utils.hexlify(ethers.utils.randomBytes(32));
+        var scopedSalt = ethers.utils.keccak256(coder.encode(["address", "bytes32"], [connectedAddress, candidate]));
+        var predicted = ethers.utils.getCreate2Address(deployer, scopedSalt, bytecodeHash);
+        if (predicted.slice(-2).toLowerCase() === "01") {
+          minedSalt = { creatorSalt: candidate, scopedSalt: scopedSalt, predictedToken: predicted, tries: i + 1 };
+          el.saltDisplay.textContent = candidate.slice(0, 10) + "…" + candidate.slice(-6) + "  (found in " + (i + 1) + " tries → token " + short(predicted) + ")";
+          refreshLaunchButtonState();
+          return;
+        }
+      }
+      el.saltDisplay.textContent = "mining failed after 20000 tries — click Re-mine";
+      refreshLaunchButtonState();
+    }).catch(function (e) {
+      console.error(e);
+      el.saltDisplay.textContent = "error reading factory state — see console";
+    });
+  }
+
+  el.remineBtn.addEventListener("click", mineSalt);
+  ["tokenName","tokenSymbol","tokenDesc","tokenImage","tokenWebsite","tokenTwitter","tokenTelegram","metaEditable","quoteToken"].forEach(function (id) {
+    el[id].addEventListener("change", function () { if (connectedAddress) mineSalt(); });
+  });
+
+  function addStep(kind, title, detail) {
+    var s = document.createElement("div");
+    s.className = "step " + kind;
+    var d = document.createElement("div"); d.className = "dot";
+    var body = document.createElement("div"); body.className = "body";
+    var t = document.createElement("div"); t.className = "title"; t.textContent = title;
+    body.appendChild(t);
+    if (detail) {
+      var det = document.createElement("div"); det.className = "detail"; det.innerHTML = detail;
+      body.appendChild(det);
+    }
+    s.appendChild(d); s.appendChild(body);
+    el.steps.appendChild(s);
+    return s;
+  }
+
+  function explorerLink(kind, value) {
+    var chain = activeChainId && CHAINS[activeChainId];
+    if (chain && chain.explorer) {
+      return "<a href='" + chain.explorer + "/" + kind + "/" + value + "' target='_blank' rel='noopener'>" + value + "</a>";
+    }
+    return "<span class='mono'>" + value + "</span> (no block explorer for this chain)";
+  }
+
+  function decodeError(err) {
+    var data = err && err.data;
+    if (!data && err && err.error && err.error.data) data = err.error.data;
+    if (typeof data === "object" && data && data.data) data = data.data;
+    if (typeof data === "string" && data.startsWith("0x")) {
+      try {
+        var parsed = iface.parseError(data);
+        return parsed.name + (parsed.args && parsed.args.length ? "(" + parsed.args.join(", ") + ")" : "");
+      } catch (e) { /* fall through */ }
+    }
+    return (err && err.reason) || (err && err.message) || "unknown error";
+  }
+
+  el.launchBtn.addEventListener("click", function () {
+    if (!writeContract || !minedSalt) return;
+    el.progressPanel.hidden = false;
+    el.steps.innerHTML = "";
+    el.launchBtn.disabled = true;
+
+    var sPrep = addStep("active", "Preparing transaction", "Refreshing config version and deadline…");
+
+    Promise.all([readContract.configVersion(), readContract.nativeLaunchFee()]).then(function (r) {
+      var cfg = r[0], fee = r[1];
+      var deadline = Math.floor(Date.now() / 1000) + (parseInt(el.deadlineMinutes.value, 10) || 20) * 60;
+      var params = buildLaunchParams(minedSalt.creatorSalt);
+      params[5] = cfg; params[6] = deadline;
+
+      sPrep.className = "step done";
+      var sSend = addStep("active", "Waiting for wallet confirmation", "Value: " + fmtUsdc(fee) + " USDC");
+
+      return writeContract.createLaunch(params, { value: fee }).then(function (tx) {
+        sSend.className = "step done";
+        var sMine = addStep("active", "Transaction sent", explorerLink("tx", tx.hash));
+        return tx.wait().then(function (receipt) {
+          sMine.className = "step done";
+          var tokenAddr = null;
+          for (var i = 0; i < receipt.logs.length; i++) {
+            if (receipt.logs[i].topics[0] === LAUNCHED_TOPIC0) {
+              tokenAddr = ethers.utils.getAddress("0x" + receipt.logs[i].topics[1].slice(-40));
+              break;
+            }
+          }
+          if (tokenAddr) {
+            addStep("done", "Token deployed", explorerLink("address", tokenAddr));
+          } else {
+            addStep("fail", "Mined, but no Launched event found in receipt", "Check the transaction manually.");
+          }
+        });
+      });
+    }).catch(function (err) {
+      console.error(err);
+      addStep("fail", "Launch failed", decodeError(err));
+    }).then(function () {
+      el.launchBtn.disabled = false;
+      mineSalt();
+    });
+  });
+
+  refreshLaunchButtonState();
+})();
+</script>

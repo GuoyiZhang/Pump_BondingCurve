@@ -1,0 +1,122 @@
+<meta charset="UTF-8">
+<title>Protocol Registry</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+<style>
+  body { padding-inline: 24px; padding-block: 72px; }
+  .page { max-width: 760px; margin: 0 auto; }
+
+  .kicker {
+    display: flex; align-items: center; gap: 10px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.72rem;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent);
+    margin-bottom: 22px;
+  }
+  .kicker::before { content: ""; width: 8px; height: 8px; background: var(--accent); box-shadow: 0 0 8px var(--accent); flex-shrink: 0; }
+  .kicker .rule { flex: 1; height: 1px; background: var(--border); }
+
+  h1.display {
+    font-weight: 600; font-size: clamp(2.2rem, 5.6vw, 3.4rem);
+    line-height: 1.08; letter-spacing: -0.01em; margin: 0 0 18px;
+    text-wrap: balance; max-width: 16ch; text-transform: uppercase;
+  }
+  .lede {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.88rem; color: var(--muted);
+    max-width: 58ch; line-height: 1.65; margin-bottom: 56px;
+  }
+
+  .registry { border-top: 1px solid var(--border); }
+  .entry {
+    display: flex; align-items: center; gap: 22px;
+    padding: 26px 6px; border-bottom: 1px solid var(--border);
+    text-decoration: none; color: inherit; position: relative;
+  }
+  .entry::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+    background: var(--accent); transform: scaleY(0); transform-origin: center;
+    transition: transform 0.15s ease;
+  }
+  a.entry { cursor: pointer; }
+  .entry .idx {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; color: var(--faint);
+    width: 2.4ch; flex-shrink: 0; padding-top: 5px;
+  }
+  .entry .name-block { flex: 1; min-width: 0; }
+  .entry .name {
+    font-family: "Chakra Petch", ui-sans-serif, sans-serif; font-weight: 600;
+    font-size: 1.5rem; margin-bottom: 8px; transition: color 0.15s ease;
+  }
+  .entry .meta {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--muted);
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+    text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 9px; border: 1px solid var(--border); font-size: 0.66rem;
+    clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  }
+  .chip .dot { width: 5px; height: 5px; }
+  .chip.live { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, var(--border)); }
+  .chip.live .dot { background: var(--good); box-shadow: 0 0 5px var(--good); }
+  .chip.soon { color: var(--faint); }
+  .chip.soon .dot { background: var(--faint); }
+  .entry .arrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 1.2rem; color: var(--faint);
+    transition: transform 0.15s ease, color 0.15s ease; flex-shrink: 0;
+  }
+  .entry.live:hover { background: var(--surface-2); }
+  .entry.live:hover::before { transform: scaleY(1); }
+  .entry.live:hover .arrow { color: var(--accent); transform: translateX(5px); }
+  .entry.live:hover .name { color: var(--accent); }
+  .entry.disabled { opacity: 0.5; }
+  .entry.disabled .arrow { visibility: hidden; }
+
+  .footnote { font-size: 0.74rem; color: var(--faint); margin-top: 52px; line-height: 1.6; }
+
+  @media (max-width: 480px) {
+    .entry { gap: 16px; padding-block: 22px; }
+    .entry .idx { width: 1.8ch; }
+  }
+</style>
+
+<div class="page">
+  <div class="kicker">Direct launchpad console<span class="rule"></span></div>
+  <h1 class="display">Choose a protocol to launch on</h1>
+  <div class="lede">Every entry below calls its factory contract directly — no protocol frontend in between, no relayer. Pick a live protocol to open its console and connect a wallet.</div>
+
+  <div class="registry">
+    <a class="entry live" href="o1.html">
+      <span class="idx num">01</span>
+      <span class="name-block">
+        <div class="name">o1.exchange v3</div>
+        <div class="meta">
+          <span class="chip live"><span class="dot"></span>Live</span>
+          <span>Arc Public Testnet</span>
+          <span>createLaunch</span>
+        </div>
+      </span>
+      <span class="arrow">→</span>
+    </a>
+
+    <div class="entry disabled">
+      <span class="idx num">02</span>
+      <span class="name-block">
+        <div class="name">Flap.sh</div>
+        <div class="meta"><span class="chip soon"><span class="dot"></span>In development</span></div>
+      </span>
+      <span class="arrow">→</span>
+    </div>
+
+    <div class="entry disabled">
+      <span class="idx num">03</span>
+      <span class="name-block">
+        <div class="name">four.meme</div>
+        <div class="meta"><span class="chip soon"><span class="dot"></span>In development</span></div>
+      </span>
+      <span class="arrow">→</span>
+    </div>
+  </div>
+
+  <div class="footnote">More chains and launch protocols plug into this registry over time — same wallet flow, same console shell, a new factory underneath.</div>
+</div>
