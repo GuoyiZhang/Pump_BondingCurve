@@ -1,0 +1,283 @@
+<meta charset="UTF-8">
+<title>pools.trade Console</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+<style>
+  body { padding-inline: 24px; padding-block: 56px; }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  /* ---------- topbar ---------- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    padding-bottom: 20px; margin-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-width: 0; }
+  .back-link {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.76rem; font-weight: 600;
+    letter-spacing: 0.03em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none; white-space: nowrap;
+  }
+  .back-link:hover { color: var(--accent); }
+  .crumb-divider { width: 1px; height: 14px; background: var(--border); flex-shrink: 0; }
+  .current-protocol {
+    font-family: "Chakra Petch", ui-sans-serif, sans-serif; font-weight: 600;
+    font-size: 1rem; color: var(--ink); white-space: nowrap;
+  }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  /* ---------- hero ---------- */
+  .hero { margin-bottom: 40px; }
+  .hero .contract-line { font-size: 0.78rem; color: var(--muted); margin-top: 14px; }
+  .hero h1 {
+    font-family: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600; font-size: clamp(2rem, 4.6vw, 2.9rem);
+    line-height: 1.08; letter-spacing: -0.005em; margin: 0 0 14px;
+    text-wrap: balance; max-width: 18ch; text-transform: uppercase;
+  }
+  .hero .sub {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.86rem; color: var(--muted);
+    max-width: 54ch; line-height: 1.55;
+  }
+  .hero .sub .mono-accent { color: var(--accent); }
+
+  /* ---------- readout ---------- */
+  .readout {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px;
+    background: var(--border); border: 1px solid var(--border); overflow: hidden; margin: 32px 0;
+  }
+  @media (max-width: 620px) { .readout { grid-template-columns: repeat(2, 1fr); } }
+  .readout .cell { background: var(--surface); padding: 16px 18px; }
+  .readout .cell .k { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); }
+  .readout .cell .v { font-size: 1.1rem; margin-top: 5px; font-weight: 600; }
+
+  /* ---------- form ---------- */
+  .form-surface {
+    background: var(--surface); border: 1px solid var(--border); padding: 32px 34px; position: relative;
+  }
+  .form-surface::before {
+    content: ""; position: absolute; top: -1px; left: -1px; width: 18px; height: 18px;
+    border-top: 2px solid var(--accent); border-left: 2px solid var(--accent);
+  }
+  .form-surface + .form-surface { margin-top: 16px; }
+  .form-surface h2 {
+    font-family: "Chakra Petch", ui-sans-serif, sans-serif; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.03em; font-size: 1.05rem; margin: 0 0 22px; color: var(--ink);
+  }
+  .form-surface h2 .hint-inline {
+    font-family: "IBM Plex Mono", monospace; text-transform: none; letter-spacing: normal;
+    font-size: 0.72rem; font-weight: 400; color: var(--faint); margin-left: 10px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.01em; }
+  .field .hint { font-size: 0.72rem; color: var(--muted); font-weight: 400; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+
+  input[type="text"], input[type="url"], textarea {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.88rem; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 2px; padding: 11px 13px; width: 100%;
+  }
+  input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  textarea { resize: vertical; min-height: 64px; font-family: "IBM Plex Mono", monospace; }
+
+  .cta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--border);
+  }
+  .cost-line { font-size: 0.8rem; color: var(--muted); }
+  .cost-line .mono { color: var(--ink); font-weight: 700; }
+
+  /* ---------- technical panel ---------- */
+  .tech-panel { margin-top: 16px; }
+  .tech-row {
+    display: flex; gap: 14px; padding: 10px 0; border-top: 1px solid var(--border);
+    font-size: 0.8rem; align-items: flex-start;
+  }
+  .tech-row:first-of-type { border-top: none; }
+  .tech-row .status {
+    width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+  }
+  .tech-row.known .status { background: var(--good); }
+  .tech-row.unknown .status { background: var(--bad); }
+  .tech-row .body { flex: 1; }
+  .tech-row .label { font-weight: 600; }
+  .tech-row .detail { color: var(--muted); font-size: 0.78rem; margin-top: 3px; word-break: break-word; }
+  .tech-row .detail .mono { color: var(--ink); }
+
+  .footnote { font-size: 0.74rem; color: var(--faint); text-align: center; margin-top: 40px; line-height: 1.6; }
+</style>
+
+<div class="page">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="back-link" href="index.html">← All protocols</a>
+      <span class="crumb-divider"></span>
+      <span class="current-protocol">pools.trade Uni Instant</span>
+    </div>
+    <div class="topbar-right">
+      <button class="primary" id="connectBtn" type="button">Connect wallet</button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h1>Mint, then launch straight into a V4 pool.</h1>
+    <div class="sub">A direct console onto pools.trade's <span class="mono-accent">multicall</span> entry — no protocol frontend in between. Wired to <span class="mono-accent">Uni Instant</span> on Arc: no bonding curve, the full supply seeds a single-sided Uniswap V4 pool at creation.</div>
+    <div class="contract-line">LiquidityLauncher (entry) <span class="mono" id="entryAddrShort"></span></div>
+  </div>
+
+  <div id="internalChainBanner" class="banner warn">
+    <span>Arc mainnet (chainId 5042) is reachable only from the corporate network/VPN as of 2026-09-12 — docs.arc.io still lists Arc as "Testnet only" for the public internet. pools.trade Uni Instant already has real Arc-mainnet activity (verified on-chain by the MemeRush data team), but this console can only reach the chain from inside the corporate network.</span>
+  </div>
+  <div id="networkBanner" class="banner warn" hidden>
+    <span>Wrong network — switch MetaMask to <span class="mono">Arc (chainId 5042)</span> to continue.</span>
+    <button class="small" id="switchNetBtn" type="button">Switch network</button>
+  </div>
+  <div id="noWalletBanner" class="banner warn" hidden>
+    <span>No injected wallet found in this tab. If MetaMask is installed, open this page in a normal browser tab (not an embedded preview) and try again.</span>
+  </div>
+  <div class="banner bad">
+    <span><strong>Launch is disabled on this page.</strong> Two parts of the real on-chain transaction could not be independently verified from public data alone (no published ABI was available to cross-check against) — see "What this console actually knows" below before assuming any encoded transaction here is safe to send. Do not adapt this page to submit a live transaction until both rows below are green.</span>
+  </div>
+
+  <div class="readout">
+    <div class="cell"><div class="k">Fee tier</div><div class="v num">0.25%</div></div>
+    <div class="cell"><div class="k">Tick spacing</div><div class="v num">25</div></div>
+    <div class="cell"><div class="k">Total supply</div><div class="v num">1,000,000,000</div></div>
+    <div class="cell"><div class="k">Quote asset</div><div class="v">Native (USDC)</div></div>
+  </div>
+
+  <div class="form-surface" id="formPanel">
+    <h2>New token<span class="hint-inline">— preview only, not wired to a send</span></h2>
+
+    <div class="row2">
+      <div class="field">
+        <label for="tokenName">Name</label>
+        <input type="text" id="tokenName" value="Test Token" maxlength="64">
+      </div>
+      <div class="field">
+        <label for="tokenSymbol">Symbol</label>
+        <input type="text" id="tokenSymbol" value="TEST" maxlength="12">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="tokenDesc">Description</label>
+      <textarea id="tokenDesc">Testing on Arc.</textarea>
+    </div>
+
+    <div class="field">
+      <label for="tokenImage">Image URL <span class="hint">— optional, ipfs:// or https://</span></label>
+      <input type="url" id="tokenImage" placeholder="ipfs://... or https://...">
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label for="tokenWebsite">Website <span class="hint">— optional</span></label>
+        <input type="url" id="tokenWebsite" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label for="tokenTwitter">Twitter / X <span class="hint">— optional</span></label>
+        <input type="url" id="tokenTwitter" placeholder="https://x.com/...">
+      </div>
+    </div>
+    <div class="field">
+      <label for="tokenTelegram">Telegram <span class="hint">— optional</span></label>
+      <input type="url" id="tokenTelegram" placeholder="https://t.me/...">
+    </div>
+
+    <div class="cta-row">
+      <div class="cost-line">Cost: <span class="mono">0 native</span> + gas <span class="hint">(no launch fee observed on-chain)</span></div>
+      <button class="primary" id="launchBtn" type="button" disabled title="Disabled — see technical panel below">Launch disabled — see notes below</button>
+    </div>
+  </div>
+
+  <div class="form-surface tech-panel">
+    <h2>What this console actually knows</h2>
+    <div class="hint" style="margin-bottom: 16px;">Reverse-engineered by decoding two real Arc-mainnet transactions (CIRC and ARCO token launches) byte-for-byte — not from a published/verified ABI. Everything below is either confirmed against both transactions, or flagged as unresolved.</div>
+
+    <div class="tech-row known">
+      <div class="status"></div>
+      <div class="body">
+        <div class="label">Entry point: <span class="mono">multicall(bytes[])</span></div>
+        <div class="detail">Both sample transactions call <span class="mono">0xac9650d8</span> on the entry contract with an array of exactly 2 inner calls, value = 0.</div>
+      </div>
+    </div>
+
+    <div class="tech-row known">
+      <div class="status"></div>
+      <div class="body">
+        <div class="label">Call 1: <span class="mono">0xdec14be1</span> — create token + set metadata</div>
+        <div class="detail">Confirmed top-level fields (both samples): metadata-contract address (<span class="mono">0xff99d8f6…bfbf6</span>), <span class="mono">string name</span>, <span class="mono">string symbol</span>, <span class="mono">uint256 decimals</span> (always 18), an address equal to the entry contract itself, then a nested block holding the description/image/website/social strings seen in <span class="mono">TokenSocialInfo.md</span>. <strong>Not yet confirmed:</strong> the exact ABI encoding of that nested 4-string block — standard decoders reject it as currently modeled, so the precise byte layout for the description/website/social fields is not nailed down. Name/symbol/decimals decode cleanly; the rest of the struct does not yet.</div>
+      </div>
+    </div>
+
+    <div class="tech-row known">
+      <div class="status"></div>
+      <div class="body">
+        <div class="label">Call 2: <span class="mono">0xb6982b48</span> — launch into the V4 pool</div>
+        <div class="detail">Confirmed fields (both samples): token address, a 32-byte value (see below), the strategy/LP-vault address <span class="mono">0xfe7be4eb…eb056</span> (constant across both txs — matches <span class="mono">POOLS_INSTANT_LAUNCH_STRATEGY_A_ARC</span>), total supply <span class="mono">1e27</span> (constant), and the connected wallet's own address (verified: equals <span class="mono">tx.from</span> in both samples).</div>
+      </div>
+    </div>
+
+    <div class="tech-row unknown">
+      <div class="status"></div>
+      <div class="body">
+        <div class="label">Unresolved: the 32-byte value in call 2</div>
+        <div class="detail">CIRC: <span class="mono">0x2a18b644…f211df</span> — ARCO: <span class="mono">0x1bc57832…57efc</span>. Tried keccak256 of the token address alone, of (token, entry), and of (token, name, symbol) — none matched. It is not the V4 <span class="mono">poolId</span> either (checked against the real <span class="mono">Initialize</span> log). Likely either a CREATE2 salt/commitment or a value that depends on something not visible from these two transactions alone (e.g. an off-chain-signed value, or a value returned by call 1 and threaded into call 2 in a way that can't be reconstructed by only reading calldata). Needs either pools.trade's real frontend network trace or a verified contract ABI to resolve — do not guess this value for a real transaction.</div>
+      </div>
+    </div>
+
+    <div class="hint" style="margin-top: 18px;">Reference transactions: <span class="mono">0xd4f46f85…4a2a</span> (CIRC) · <span class="mono">0xcdf1c579…f0214</span> (ARCO).</div>
+  </div>
+
+  <div class="footnote">Discovery/attribution logic for this protocol on Arc lives in <span class="mono">output/03-meme/PoolsTradeArc/</span> (backend indexing only — this console is a separate, unverified front-end exploration).<br>Each chain/protocol plugs into the registry with its own factory; the console shell and wallet flow stay the same.</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var ENTRY = "0x0000ffffbe8efe702c8703ae3477ff5de3d319c0";
+  var ARC_CHAIN_ID_HEX = "0x13b2"; // chainId 5042
+
+  var el = {};
+  ["connectBtn", "entryAddrShort", "internalChainBanner", "networkBanner", "switchNetBtn",
+   "noWalletBanner"].forEach(function (id) { el[id] = document.getElementById(id); });
+
+  el.entryAddrShort.textContent = ENTRY;
+
+  function short(addr) { return addr.slice(0, 6) + "…" + addr.slice(-4); }
+  function hasInjectedWallet() { return typeof window.ethereum !== "undefined"; }
+
+  function checkNetwork(chainIdHex) {
+    el.networkBanner.hidden = (chainIdHex === ARC_CHAIN_ID_HEX);
+  }
+
+  el.switchNetBtn.addEventListener("click", function () {
+    window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: ARC_CHAIN_ID_HEX }]
+    }).catch(function (err) { console.error(err); });
+  });
+
+  el.connectBtn.addEventListener("click", function () {
+    if (!hasInjectedWallet()) { el.noWalletBanner.hidden = false; return; }
+    window.ethereum.request({ method: "eth_requestAccounts" }).then(function (accounts) {
+      var addr = ethers.utils.getAddress(accounts[0]);
+      el.connectBtn.textContent = short(addr);
+      el.connectBtn.disabled = true;
+      window.ethereum.request({ method: "eth_chainId" }).then(checkNetwork);
+      window.ethereum.on && window.ethereum.on("chainChanged", checkNetwork);
+    }).catch(function (e) {
+      console.error(e);
+    });
+  });
+})();
+</script>

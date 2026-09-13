@@ -1,0 +1,754 @@
+<meta charset="UTF-8">
+<title>Peach Console</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+<style>
+  body { padding-inline: 24px; padding-block: 56px; }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  /* ---------- topbar ---------- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    padding-bottom: 20px; margin-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; min-width: 0; }
+  .back-link {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.76rem; font-weight: 600;
+    letter-spacing: 0.03em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none; white-space: nowrap;
+  }
+  .back-link:hover { color: var(--accent); }
+  .crumb-divider { width: 1px; height: 14px; background: var(--border); flex-shrink: 0; }
+  .current-protocol {
+    font-family: "Chakra Petch", ui-sans-serif, sans-serif; font-weight: 600;
+    font-size: 1rem; color: var(--ink); white-space: nowrap;
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  /* ---------- hero ---------- */
+  .hero { margin-bottom: 40px; }
+  .hero .contract-line { font-size: 0.78rem; color: var(--muted); margin-top: 14px; }
+
+  .hero h1 {
+    font-family: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    font-size: clamp(2rem, 4.6vw, 2.9rem);
+    line-height: 1.08;
+    letter-spacing: -0.005em;
+    margin: 0 0 14px;
+    text-wrap: balance;
+    max-width: 18ch;
+    text-transform: uppercase;
+  }
+  .hero .sub {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.86rem;
+    color: var(--muted);
+    max-width: 54ch;
+    line-height: 1.55;
+  }
+  .hero .sub .mono-accent { color: var(--accent); }
+
+  /* ---------- readout ---------- */
+  .readout {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin: 32px 0;
+  }
+  @media (max-width: 620px) { .readout { grid-template-columns: repeat(1, 1fr); } }
+  .readout .cell { background: var(--surface); padding: 16px 18px; }
+  .readout .cell .k { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); }
+  .readout .cell .v { font-size: 1.15rem; margin-top: 5px; font-weight: 600; }
+  .readout .cell .v.pending { color: var(--faint); font-weight: 400; }
+  .readout .cell .v.small { font-size: 0.86rem; }
+
+  /* ---------- form ---------- */
+  .form-surface {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px 34px;
+    position: relative;
+  }
+  .form-surface::before {
+    content: ""; position: absolute; top: -1px; left: -1px; width: 18px; height: 18px;
+    border-top: 2px solid var(--accent); border-left: 2px solid var(--accent);
+  }
+  .form-surface + .form-surface { margin-top: 16px; }
+  .form-surface h2 {
+    font-family: "Chakra Petch", ui-sans-serif, sans-serif; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.03em;
+    font-size: 1.05rem; margin: 0 0 22px; color: var(--ink);
+  }
+  .form-surface h3 {
+    font-family: "IBM Plex Mono", monospace; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    font-size: 0.72rem; color: var(--muted); margin: 26px 0 14px;
+  }
+  .form-surface h3:first-of-type { margin-top: 0; }
+
+  .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.01em; }
+  .field .hint { font-size: 0.72rem; color: var(--muted); font-weight: 400; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .row4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 520px) { .row2, .row4 { grid-template-columns: 1fr; } }
+
+  input[type="text"], input[type="url"], input[type="number"], select, textarea {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.88rem; color: var(--ink);
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 2px; padding: 11px 13px; width: 100%;
+  }
+  input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  textarea { resize: vertical; min-height: 64px; font-family: "IBM Plex Mono", monospace; }
+
+  .pct-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .pct-btn { flex: 1; min-width: 56px; padding: 7px 8px; font-size: 0.72rem; }
+
+  details.advanced { border-top: 1px dashed var(--border); margin-top: 6px; padding-top: 16px; }
+  details.advanced summary { cursor: pointer; font-size: 0.78rem; font-weight: 600; color: var(--muted); list-style: none; }
+  details.advanced summary::-webkit-details-marker { display: none; }
+  details.advanced summary::before { content: "+ "; color: var(--accent); }
+  details.advanced[open] summary::before { content: "– "; color: var(--accent); }
+  details.advanced .adv-body { padding-top: 16px; }
+
+  .cta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--border);
+  }
+  .cost-line { font-size: 0.8rem; color: var(--muted); }
+  .cost-line .mono { color: var(--ink); font-weight: 700; }
+
+  .steps { display: flex; flex-direction: column; }
+  .step { display: flex; align-items: flex-start; gap: 12px; font-size: 0.85rem; padding: 11px 0; border-top: 1px solid var(--border); }
+  .step:first-child { border-top: none; }
+  .step .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--faint); margin-top: 5px; flex-shrink: 0; }
+  .step.done .dot { background: var(--good); }
+  .step.active .dot { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .step.fail .dot { background: var(--bad); }
+  .step .body { flex: 1; }
+  .step .title { font-weight: 600; }
+  .step .detail { color: var(--muted); font-size: 0.8rem; margin-top: 3px; word-break: break-word; }
+
+  .footnote { font-size: 0.74rem; color: var(--faint); text-align: center; margin-top: 40px; line-height: 1.6; }
+
+  .confidence-note {
+    font-size: 0.76rem; color: var(--good); background: var(--good-bg);
+    border: 1px solid color-mix(in srgb, var(--good) 35%, var(--border));
+    border-radius: 3px; padding: 12px 14px; margin-bottom: 24px; line-height: 1.55;
+  }
+</style>
+
+<div class="page">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <a class="back-link" href="index.html">← All protocols</a>
+      <span class="crumb-divider"></span>
+      <span class="current-protocol">Peach</span>
+    </div>
+    <div class="topbar-right">
+      <div class="chain-switch">
+        <button class="chain-btn" id="chainBtn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span class="chain-dot" id="chainDot"></span>
+          <span id="chainLabel">Arc Public Testnet</span>
+          <span class="caret">▾</span>
+        </button>
+        <div class="chain-menu" id="chainMenu" hidden>
+          <button class="chain-item active" id="chainItemTestnet" type="button" data-chain-id="0x4cef52"><span class="dot"></span> Arc Public Testnet</button>
+          <button class="chain-item soon" type="button" disabled><span class="dot"></span> Arc Mainnet <span class="tag">Public Launch not open yet</span></button>
+        </div>
+      </div>
+      <button class="primary" id="connectBtn" type="button">Connect wallet</button>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h1>Launch tokens, straight from the curve.</h1>
+    <div class="sub">A direct console onto Peach's <span class="mono-accent">LaunchFactory</span> — no protocol frontend in between. Native BondingCurve + Uniswap V4 launchpad on Arc.</div>
+    <div class="contract-line">LaunchFactory <span class="mono" id="factoryAddrShort"></span> · LaunchForwarder <span class="mono" id="forwarderAddrShort"></span></div>
+  </div>
+
+  <div class="confidence-note">
+    ✅ <strong>Real ABI, not a guess.</strong> peach.ag has no published docs/ABI page, but its own production frontend bundle (<span class="mono">www.peach.ag/arc-testnet/launchpad/create</span>) ships the full <span class="mono">LaunchFactory</span>/<span class="mono">LaunchForwarder</span> ABI and the exact deployment config (contract addresses, fee policy, snipe-tax config) as literal JS constants — extracted directly from their Turbopack chunks, not reverse-engineered from calldata. This also gave an independent, higher-confidence confirmation of the W3W-56729 snipe-tax finding (<span class="mono">startBps:9900, durationSeconds:3</span> — exact match). Two simplifications vs. the real product UI: (1) logo is sent as a plain URL/URI, skipping peach.ag's own signed IPFS-upload session (their backend, not on-chain); (2) when doing a creator initial buy, <span class="mono">minInitialTokenOut</span> is sent as 0 (no slippage floor) rather than replicating their bonding-curve quote math — acceptable since this is testnet-only and a revert only costs test gas.
+  </div>
+
+  <div id="networkBanner" class="banner warn" hidden>
+    <span>Wrong network — switch MetaMask to <span id="targetChainName">Arc Public Testnet</span> to launch.</span>
+    <button class="small" id="switchNetBtn" type="button">Switch network</button>
+  </div>
+  <div id="noWalletBanner" class="banner warn" hidden>
+    <span>No injected wallet found in this tab. If MetaMask is installed, open this page in a normal browser tab (not an embedded preview) and try again.</span>
+  </div>
+
+  <div class="readout">
+    <div class="cell">
+      <div class="k">Launch fee</div>
+      <div class="v pending num" id="statFee">connect to load</div>
+    </div>
+    <div class="cell">
+      <div class="k">Quote token</div>
+      <div class="v pending" id="statQuote">connect to load</div>
+    </div>
+    <div class="cell">
+      <div class="k">Snipe tax</div>
+      <div class="v pending small num" id="statSnipeTax">connect to load</div>
+    </div>
+    <div class="cell">
+      <div class="k">Curve fee</div>
+      <div class="v pending num" id="statCurveFee">connect to load</div>
+    </div>
+    <div class="cell">
+      <div class="k">Max creator tax</div>
+      <div class="v pending num" id="statMaxCreatorTax">connect to load</div>
+    </div>
+    <div class="cell">
+      <div class="k">Max creator initial buy</div>
+      <div class="v pending num" id="statMaxInitialBuy">connect to load</div>
+    </div>
+  </div>
+
+  <div class="form-surface" id="formPanel">
+    <h2>New token</h2>
+
+    <h3>Basic information</h3>
+    <div class="row2">
+      <div class="field">
+        <label for="tokenName">Name <span class="hint">— max 64 bytes</span></label>
+        <input type="text" id="tokenName" value="LAUNCHPAD" maxlength="64">
+      </div>
+      <div class="field">
+        <label for="tokenSymbol">Symbol <span class="hint">— max 16 bytes</span></label>
+        <input type="text" id="tokenSymbol" value="LAUNCHPAD" maxlength="16">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="tokenDesc">Description <span class="hint">— max 2048 bytes</span></label>
+      <textarea id="tokenDesc" maxlength="2048">LAUNCHPAD</textarea>
+    </div>
+
+    <div class="field">
+      <label for="tokenImage">Logo URL <span class="hint">— optional, ipfs:// or https://. peach.ag pins this through its own signed upload API; this console just sends whatever URL you give it.</span></label>
+      <input type="url" id="tokenImage" value="ipfs://bafybeibvvjkph5siu2hzujlaijce7peytfvst7xdwpnmiudd6fdylsufjy" placeholder="ipfs://... or https://...">
+    </div>
+
+    <div class="field">
+      <label for="quoteToken">Payment token</label>
+      <select id="quoteToken">
+        <option value="0x3600000000000000000000000000000000000000" selected>USDC</option>
+        <option value="0x4608e7FC3163f11c241a7cDD1C8A7d46F150e37a">tUSDG (testnet-only)</option>
+      </select>
+    </div>
+
+    <h3>Creator token purchase <span class="hint" style="font-weight:400; text-transform:none; letter-spacing:normal;">— optional. Exempt from the anti-snipe tax (protocol rule, confirmed on peach.ag's own create page copy).</span></h3>
+    <div class="field">
+      <label for="initialBuyAmount">Amount <span class="hint" id="initialBuyHint">— in payment token units</span></label>
+      <input type="number" id="initialBuyAmount" value="0" min="0" step="any">
+      <div class="pct-row">
+        <button class="small pct-btn" type="button" data-pct="25">25%</button>
+        <button class="small pct-btn" type="button" data-pct="50">50%</button>
+        <button class="small pct-btn" type="button" data-pct="75">75%</button>
+        <button class="small pct-btn" type="button" data-pct="100">100%</button>
+      </div>
+      <div class="hint">% buttons fill from your connected wallet's balance of the selected payment token.</div>
+    </div>
+
+    <h3>Optional links</h3>
+    <div class="row2">
+      <div class="field">
+        <label for="socialTwitter">X (Twitter)</label>
+        <input type="text" id="socialTwitter" maxlength="256" value="https://x.com/launchpad" placeholder="https://x.com/...">
+      </div>
+      <div class="field">
+        <label for="socialTelegram">Telegram</label>
+        <input type="text" id="socialTelegram" maxlength="256" value="https://t.me/launchpad" placeholder="https://t.me/...">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="socialDiscord">Discord</label>
+        <input type="text" id="socialDiscord" maxlength="256" value="https://discord.gg/launchpad" placeholder="https://discord.gg/...">
+      </div>
+      <div class="field">
+        <label for="socialWebsite">Website</label>
+        <input type="text" id="socialWebsite" maxlength="256" value="https://launchpad.example.com" placeholder="https://...">
+      </div>
+    </div>
+    <div class="field">
+      <label for="socialFarcaster">Farcaster <span class="hint">— in the ABI, not shown on peach.ag's own form</span></label>
+      <input type="text" id="socialFarcaster" maxlength="256" value="https://warpcast.com/launchpad" placeholder="https://warpcast.com/...">
+    </div>
+
+    <details class="advanced">
+      <summary>Advanced — creator tax, fee recipient, tax exemptions</summary>
+      <div class="adv-body">
+        <div class="row2">
+          <div class="field">
+            <label for="creatorTaxBps">Creator tax <span class="hint">— bps, bounded by on-chain maxCreatorTaxBps</span></label>
+            <input type="number" id="creatorTaxBps" value="0" min="0" step="1">
+          </div>
+          <div class="field">
+            <label for="feeRecipient">Fee recipient <span class="hint">— optional, defaults to creator (your wallet) if left blank</span></label>
+            <input type="text" class="mono" id="feeRecipient" value="" placeholder="0x... (leave blank to default to your wallet)">
+          </div>
+        </div>
+        <div class="field">
+          <label for="taxExemptions">Launch tax exemptions <span class="hint">— optional, comma-separated addresses exempt from the anti-snipe tax (max 32)</span></label>
+          <input type="text" class="mono" id="taxExemptions" value="" placeholder="0xabc..., 0xdef...">
+        </div>
+        <div class="hint" style="margin-top:2px;">Buyback is always sent as <span class="mono">false</span> — peach.ag's own create page doesn't expose a control for it either, even though the contract ABI supports it.</div>
+      </div>
+    </details>
+
+    <div class="cta-row">
+      <div class="cost-line">Cost: <span class="mono" id="costLine">connect to load</span> + gas</div>
+      <button class="primary" id="launchBtn" type="button" disabled>Connect wallet to launch</button>
+    </div>
+  </div>
+
+  <div class="form-surface" id="progressPanel" hidden>
+    <h2>Launch progress</h2>
+    <div class="steps" id="steps"></div>
+  </div>
+
+  <div class="footnote">Calls <span class="mono">LaunchFactory.createToken()</span> directly, or <span class="mono">LaunchForwarder.launchAndBuy()</span> when a creator initial purchase amount &gt; 0 is set — both from the real ABI shipped in peach.ag's own frontend build. Testnet only — no mainnet funds involved.</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ============================================================================================
+  // Peach (peach.ag) LaunchFactory / LaunchForwarder — real ABI + deployment config.
+  //
+  // peach.ag has no published docs/ABI page. Everything below comes from peach.ag's OWN
+  // production frontend build (www.peach.ag/arc-testnet/launchpad/create), whose Turbopack
+  // JS chunks embed the full contract ABI (as a literal viem/ethers ABI array) and the exact
+  // deployment config object (contract addresses, quote tokens, launch config, fee policy,
+  // snipe-tax config) as plain JS constants — pulled by downloading every /_next/static chunk
+  // referenced from the page and grepping for "createToken"/"snipeTax"/deployment object names.
+  // This supersedes an earlier reverse-engineered version of this page that guessed at a
+  // 16-field flat tuple from raw calldata (selector 0x5a808005) with several LOW-confidence
+  // fields — the real struct below has named fields for everything, is the literal source of
+  // truth, and additionally gave an independent confirmation of the W3W-56729 snipe-tax finding
+  // (startBps 9900 / durationSeconds 3 — exact match with the eth_call-based finding).
+  //
+  // expectedEconomics is a commit hash the contract checks against current on-chain state at
+  // execution time (protects the creator from a config change between quote and submit):
+  //   keccak256(abi.encode(
+  //     phantomQuote, graduationThreshold,        // from quoteTokenEconomics(quoteToken)
+  //     supply, curveFeeBps, poolFee, tickSpacing, // from launchConfig(launchConfigId)
+  //     protocolFeeShareBps, buybackBurnBps, hookFeeBps, maxInternalPriceImpactBps // from feePolicy()
+  //   ))
+  // — field order and types (uint256 x4, uint24, int24, uint16 x4) taken verbatim from the
+  // frontend's own encodeAbiParameters() call site.
+  // ============================================================================================
+
+  var FACTORY_TESTNET = "0xd60804941f49270C74F4C7E8686e288723360A75";
+  var FORWARDER_TESTNET = "0xEfFef0A2059E0B61b9253403AfB43a414F0994A9";
+  var LAUNCH_CONFIG_ID = 0; // the only launchConfigId peach.ag's own frontend ever uses
+  var TOKEN_CREATED_TOPIC0 = "0x091220c7b93dbf022367afb0756ee792b7be2ca40436aa65722f233607784d62";
+  var DEADLINE_WINDOW_SECONDS = 600; // toDeadline() default in peach.ag's own SDK bundle, not user-configurable in their UI either
+
+  var CREATE_TOKEN_PARAMS_TYPE =
+    "tuple(string name,string symbol,string logo,string description," +
+    "tuple(string twitter,string telegram,string discord,string website,string farcaster) socials," +
+    "address quoteToken,uint256 launchConfigId,bytes32 expectedEconomics,address[] launchTaxExemptions," +
+    "address creatorFeeRecipient,bool buybackEnabled,uint16 creatorTaxBps,uint256 creatorInitialBuyQuoteRaw," +
+    "address creatorInitialBuyRecipient,uint256 minInitialTokenOut,uint256 deadline,bytes32 salt)";
+
+  var FACTORY_ABI = [
+    "function createToken(" + CREATE_TOKEN_PARAMS_TYPE + " params) returns (address token, address curve)",
+    "function launchFee() view returns (uint256)",
+    "function launchFeeToken() view returns (address)",
+    "function maxCreatorTaxBps() view returns (uint16)",
+    "function maxCreatorInitialBuyBps() view returns (uint16)",
+    "function approvedQuoteTokens(address quoteToken) view returns (bool)",
+    "function launchConfig(uint256 launchConfigId) view returns (tuple(uint256 supply,uint256 curveFeeBps,uint24 poolFee,int24 tickSpacing,bool enabled))",
+    "function quoteTokenEconomics(address quoteToken) view returns (tuple(uint256 phantomQuote,uint256 graduationThreshold,uint8 decimals))",
+    "function feePolicy() view returns (tuple(address protocolFeeRecipient,uint16 protocolFeeShareBps,uint16 buybackBurnBps,uint16 hookFeeBps,uint16 maxInternalPriceImpactBps))",
+    "function snipeTaxConfig() view returns (tuple(uint16 startBps,uint32 durationSeconds))"
+  ];
+  var FORWARDER_ABI = [
+    "function launchAndBuy(" + CREATE_TOKEN_PARAMS_TYPE + " params) returns (address token, address curve)"
+  ];
+  var ERC20_ABI = [
+    "function decimals() view returns (uint8)",
+    "function balanceOf(address) view returns (uint256)",
+    "function allowance(address owner, address spender) view returns (uint256)",
+    "function approve(address spender, uint256 amount) returns (bool)"
+  ];
+
+  var CHAINS = {
+    "0x4cef52": {
+      label: "Arc Public Testnet",
+      rpcUrl: "https://rpc.testnet.arc.io",
+      explorer: "https://testnet.arcscan.app",
+      nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 }
+    }
+  };
+  var DEFAULT_CHAIN_ID_HEX = "0x4cef52";
+  var targetChainId = DEFAULT_CHAIN_ID_HEX;
+  var activeChainId = null;
+
+  var readProvider = null;
+  var factoryRead = null;
+  var signer = null;
+  var connectedAddress = null;
+
+  var quoteTokenState = { address: null, decimals: 6, balanceRaw: ethers.constants.Zero };
+  var liveMaxCreatorTaxBps = 0;
+
+  var el = {};
+  ["connectBtn","networkBanner","switchNetBtn","noWalletBanner","factoryAddrShort","forwarderAddrShort",
+   "targetChainName",
+   "chainBtn","chainMenu","chainDot","chainLabel","chainItemTestnet",
+   "statFee","statQuote","statSnipeTax","statCurveFee","statMaxCreatorTax","statMaxInitialBuy",
+   "tokenName","tokenSymbol","tokenDesc","tokenImage",
+   "quoteToken","initialBuyAmount","initialBuyHint",
+   "socialTwitter","socialTelegram","socialDiscord","socialWebsite","socialFarcaster",
+   "creatorTaxBps","feeRecipient","taxExemptions",
+   "costLine","launchBtn","progressPanel","steps","formPanel"].forEach(function (id) {
+    el[id] = document.getElementById(id);
+  });
+
+  el.factoryAddrShort.textContent = short(FACTORY_TESTNET);
+  el.forwarderAddrShort.textContent = short(FORWARDER_TESTNET);
+
+  function short(addr) { return addr.slice(0, 6) + "…" + addr.slice(-4); }
+
+  function hasInjectedWallet() { return typeof window.ethereum !== "undefined"; }
+
+  function checkNetwork(chainIdHex) {
+    var chain = CHAINS[chainIdHex];
+    if (chain) {
+      activeChainId = chainIdHex;
+      targetChainId = chainIdHex;
+      el.networkBanner.hidden = true;
+      el.chainBtn.classList.remove("wrong-network");
+      el.chainLabel.textContent = chain.label;
+    } else {
+      activeChainId = null;
+      el.networkBanner.hidden = false;
+      el.chainBtn.classList.add("wrong-network");
+      el.chainLabel.textContent = "Wrong network";
+      el.targetChainName.textContent = CHAINS[targetChainId].label;
+    }
+  }
+
+  function switchToChain(chainIdHex) {
+    var chain = CHAINS[chainIdHex];
+    targetChainId = chainIdHex;
+    return window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: chainIdHex }] })
+      .catch(function (err) {
+        if (err && err.code === 4902) {
+          return window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId: chainIdHex, chainName: chain.label,
+              nativeCurrency: chain.nativeCurrency, rpcUrls: [chain.rpcUrl],
+              blockExplorerUrls: [chain.explorer]
+            }]
+          }).catch(function (e2) { console.error(e2); });
+        }
+        console.error(err);
+      });
+  }
+
+  el.switchNetBtn.addEventListener("click", function () { switchToChain(targetChainId); });
+
+  el.chainBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    var willOpen = el.chainMenu.hidden;
+    el.chainMenu.hidden = !willOpen;
+    el.chainBtn.setAttribute("aria-expanded", String(willOpen));
+  });
+  document.addEventListener("click", function (e) {
+    if (!el.chainMenu.hidden && !el.chainMenu.contains(e.target) && e.target !== el.chainBtn) {
+      el.chainMenu.hidden = true;
+      el.chainBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !el.chainMenu.hidden) {
+      el.chainMenu.hidden = true;
+      el.chainBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  function showBanner(kind, text) {
+    var b = document.createElement("div");
+    b.className = "banner " + kind;
+    b.textContent = text;
+    el.formPanel.parentNode.insertBefore(b, el.formPanel);
+  }
+
+  function refreshLaunchButtonState() {
+    el.launchBtn.disabled = !signer;
+    el.launchBtn.textContent = signer ? "Launch token" : "Connect wallet to launch";
+  }
+
+  function setStat(elm, text) { elm.textContent = text; elm.classList.remove("pending"); }
+
+  function loadStats() {
+    if (!factoryRead) return;
+    factoryRead.launchFee().then(function (fee) {
+      setStat(el.statFee, fee.isZero() ? "Free" : ethers.utils.formatUnits(fee, 18));
+      el.costLine.textContent = fee.isZero() ? "0 (launch is free)" : ethers.utils.formatUnits(fee, 18);
+    }).catch(function (e) { console.error(e); setStat(el.statFee, "unavailable"); });
+
+    factoryRead.snipeTaxConfig().then(function (cfg) {
+      setStat(el.statSnipeTax, (cfg.startBps / 100).toFixed(0) + "% / " + cfg.durationSeconds + "s decay");
+    }).catch(function (e) { console.error(e); setStat(el.statSnipeTax, "unavailable"); });
+
+    factoryRead.maxCreatorTaxBps().then(function (bps) {
+      liveMaxCreatorTaxBps = bps;
+      el.creatorTaxBps.setAttribute("max", String(bps));
+      setStat(el.statMaxCreatorTax, (bps / 100).toFixed(2) + "%");
+    }).catch(function (e) { console.error(e); setStat(el.statMaxCreatorTax, "unavailable"); });
+
+    factoryRead.maxCreatorInitialBuyBps().then(function (bps) {
+      setStat(el.statMaxInitialBuy, (bps / 100).toFixed(0) + "% of curve");
+    }).catch(function (e) { console.error(e); setStat(el.statMaxInitialBuy, "unavailable"); });
+
+    factoryRead.launchConfig(LAUNCH_CONFIG_ID).then(function (cfg) {
+      setStat(el.statCurveFee, (cfg.curveFeeBps / 100).toFixed(2) + "%");
+    }).catch(function (e) { console.error(e); setStat(el.statCurveFee, "unavailable"); });
+
+    updateQuoteToken();
+  }
+
+  function updateQuoteToken() {
+    var opt = el.quoteToken.options[el.quoteToken.selectedIndex];
+    setStat(el.statQuote, opt.text);
+    var address = el.quoteToken.value;
+    quoteTokenState.address = address;
+    if (!readProvider) return;
+    var erc20 = new ethers.Contract(address, ERC20_ABI, readProvider);
+    var work = [erc20.decimals().catch(function () { return 6; })];
+    if (connectedAddress) work.push(erc20.balanceOf(connectedAddress).catch(function () { return ethers.constants.Zero; }));
+    Promise.all(work).then(function (r) {
+      quoteTokenState.decimals = r[0];
+      quoteTokenState.balanceRaw = r[1] || ethers.constants.Zero;
+      el.initialBuyHint.textContent = "— in " + opt.text + " units (wallet balance: " +
+        ethers.utils.formatUnits(quoteTokenState.balanceRaw, quoteTokenState.decimals) + ")";
+    });
+  }
+  el.quoteToken.addEventListener("change", updateQuoteToken);
+
+  document.querySelectorAll(".pct-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var pct = parseInt(btn.getAttribute("data-pct"), 10);
+      var amount = quoteTokenState.balanceRaw.mul(pct).div(100);
+      el.initialBuyAmount.value = ethers.utils.formatUnits(amount, quoteTokenState.decimals);
+    });
+  });
+
+  el.connectBtn.addEventListener("click", function () {
+    if (!hasInjectedWallet()) { el.noWalletBanner.hidden = false; return; }
+    window.ethereum.request({ method: "eth_requestAccounts" }).then(function (accounts) {
+      connectedAddress = ethers.utils.getAddress(accounts[0]);
+      el.connectBtn.textContent = short(connectedAddress);
+      el.connectBtn.disabled = true;
+      var web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+      readProvider = web3Provider;
+      signer = web3Provider.getSigner();
+      factoryRead = new ethers.Contract(FACTORY_TESTNET, FACTORY_ABI, web3Provider);
+
+      window.ethereum.request({ method: "eth_chainId" }).then(checkNetwork);
+      window.ethereum.on && window.ethereum.on("chainChanged", checkNetwork);
+
+      loadStats();
+      refreshLaunchButtonState();
+    }).catch(function (e) {
+      console.error(e);
+      showBanner("bad", "Wallet connection was rejected or failed.");
+    });
+  });
+
+  function addStep(kind, title, detail) {
+    var s = document.createElement("div");
+    s.className = "step " + kind;
+    var d = document.createElement("div"); d.className = "dot";
+    var body = document.createElement("div"); body.className = "body";
+    var t = document.createElement("div"); t.className = "title"; t.textContent = title;
+    body.appendChild(t);
+    if (detail) {
+      var det = document.createElement("div"); det.className = "detail"; det.innerHTML = detail;
+      body.appendChild(det);
+    }
+    s.appendChild(d); s.appendChild(body);
+    el.steps.appendChild(s);
+    return s;
+  }
+
+  function explorerLink(kind, value) {
+    var chain = activeChainId && CHAINS[activeChainId];
+    if (chain && chain.explorer) {
+      return "<a href='" + chain.explorer + "/" + kind + "/" + value + "' target='_blank' rel='noopener'>" + value + "</a>";
+    }
+    return "<span class='mono'>" + value + "</span> (no block explorer for this chain)";
+  }
+
+  function decodeRevert(err) {
+    var data = err && err.data;
+    if (!data && err && err.error && err.error.data) data = err.error.data;
+    if (typeof data === "object" && data && data.data) data = data.data;
+    if (typeof data === "string" && data.startsWith("0x") && data.length > 2) {
+      return "revert data: " + data;
+    }
+    return (err && err.reason) || (err && err.message) || "unknown error";
+  }
+
+  function parseAddressList(raw) {
+    return raw.split(",").map(function (s) { return s.trim(); }).filter(Boolean).map(function (a) {
+      return ethers.utils.getAddress(a);
+    });
+  }
+
+  // expectedEconomics: keccak256(abi.encode(...)) over live on-chain state, matching the exact
+  // field order/types used by peach.ag's own encodeAbiParameters() call (see header comment).
+  function buildExpectedEconomics(launchConfig, quoteEconomics, feePolicy) {
+    var types = ["uint256", "uint256", "uint256", "uint256", "uint24", "int24", "uint16", "uint16", "uint16", "uint16"];
+    var values = [
+      quoteEconomics.phantomQuote, quoteEconomics.graduationThreshold,
+      launchConfig.supply, launchConfig.curveFeeBps, launchConfig.poolFee, launchConfig.tickSpacing,
+      feePolicy.protocolFeeShareBps, feePolicy.buybackBurnBps, feePolicy.hookFeeBps, feePolicy.maxInternalPriceImpactBps
+    ];
+    var encoded = ethers.utils.defaultAbiCoder.encode(types, values);
+    return ethers.utils.keccak256(encoded);
+  }
+
+  async function ensureAllowance(erc20Contract, owner, spender, amountRaw, stepLabel) {
+    var current = await erc20Contract.allowance(owner, spender);
+    if (current.gte(amountRaw)) return;
+    var sApprove = addStep("active", stepLabel, "Waiting for wallet confirmation…");
+    var tx = await erc20Contract.connect(signer).approve(spender, amountRaw);
+    sApprove.querySelector(".detail").innerHTML = explorerLink("tx", tx.hash);
+    await tx.wait();
+    sApprove.className = "step done";
+  }
+
+  el.launchBtn.addEventListener("click", function () {
+    if (!signer) return;
+    el.progressPanel.hidden = false;
+    el.steps.innerHTML = "";
+    el.launchBtn.disabled = true;
+
+    (async function () {
+      var sPrep = addStep("active", "Reading on-chain economics", "launchConfig / quoteTokenEconomics / feePolicy…");
+      try {
+        var quoteAddress = el.quoteToken.value;
+        var quoteDecimals = quoteTokenState.decimals;
+        var initialBuyRaw = ethers.utils.parseUnits(String(el.initialBuyAmount.value || "0"), quoteDecimals);
+
+        var launchConfig = await factoryRead.launchConfig(LAUNCH_CONFIG_ID);
+        var quoteEconomics = await factoryRead.quoteTokenEconomics(quoteAddress);
+        var feePolicy = await factoryRead.feePolicy();
+        var launchFeeRaw = await factoryRead.launchFee();
+        var launchFeeToken = await factoryRead.launchFeeToken();
+        var expectedEconomics = buildExpectedEconomics(launchConfig, quoteEconomics, feePolicy);
+        var block = await readProvider.getBlock("latest");
+        var deadline = ethers.BigNumber.from(block.timestamp).add(DEADLINE_WINDOW_SECONDS);
+        var salt = ethers.utils.keccak256(ethers.utils.randomBytes(32));
+        sPrep.className = "step done";
+
+        var creatorTaxBpsInput = parseInt(el.creatorTaxBps.value, 10) || 0;
+        if (liveMaxCreatorTaxBps && creatorTaxBpsInput > liveMaxCreatorTaxBps) {
+          throw new Error("Creator tax exceeds on-chain maxCreatorTaxBps (" + liveMaxCreatorTaxBps + ").");
+        }
+        var feeRecipientRaw = el.feeRecipient.value.trim();
+        var creatorFeeRecipient = feeRecipientRaw ? ethers.utils.getAddress(feeRecipientRaw) : ethers.constants.AddressZero;
+        var launchTaxExemptions = el.taxExemptions.value.trim() ? parseAddressList(el.taxExemptions.value) : [];
+
+        var params = {
+          name: el.tokenName.value.trim(),
+          symbol: el.tokenSymbol.value.trim(),
+          logo: el.tokenImage.value.trim(),
+          description: el.tokenDesc.value.trim(),
+          socials: {
+            twitter: el.socialTwitter.value.trim(),
+            telegram: el.socialTelegram.value.trim(),
+            discord: el.socialDiscord.value.trim(),
+            website: el.socialWebsite.value.trim(),
+            farcaster: el.socialFarcaster.value.trim()
+          },
+          quoteToken: quoteAddress,
+          launchConfigId: LAUNCH_CONFIG_ID,
+          expectedEconomics: expectedEconomics,
+          launchTaxExemptions: launchTaxExemptions,
+          creatorFeeRecipient: creatorFeeRecipient,
+          buybackEnabled: false, // peach.ag's own create page never exposes this control either
+          creatorTaxBps: creatorTaxBpsInput,
+          creatorInitialBuyQuoteRaw: initialBuyRaw,
+          creatorInitialBuyRecipient: connectedAddress,
+          minInitialTokenOut: ethers.constants.Zero, // simplification — see confidence-note banner
+          deadline: deadline,
+          salt: salt
+        };
+
+        var quoteErc20 = new ethers.Contract(quoteAddress, ERC20_ABI, readProvider);
+        var usingInitialBuy = initialBuyRaw.gt(0);
+        var spender = usingInitialBuy ? FORWARDER_TESTNET : FACTORY_TESTNET;
+
+        if (usingInitialBuy) {
+          await ensureAllowance(quoteErc20, connectedAddress, spender, initialBuyRaw, "Approving payment token for initial buy");
+        }
+        if (launchFeeRaw.gt(0)) {
+          var feeErc20 = new ethers.Contract(launchFeeToken, ERC20_ABI, readProvider);
+          await ensureAllowance(feeErc20, connectedAddress, spender, launchFeeRaw, "Approving launch fee token");
+        }
+
+        var sSend = addStep("active", "Waiting for wallet confirmation", usingInitialBuy ? "LaunchForwarder.launchAndBuy(...)" : "LaunchFactory.createToken(...)");
+        var contract = usingInitialBuy
+          ? new ethers.Contract(FORWARDER_TESTNET, FORWARDER_ABI, signer)
+          : new ethers.Contract(FACTORY_TESTNET, FACTORY_ABI, signer);
+        var fnName = usingInitialBuy ? "launchAndBuy" : "createToken";
+        var tx = await contract[fnName](params);
+        sSend.className = "step done";
+
+        var sMine = addStep("active", "Transaction sent", explorerLink("tx", tx.hash));
+        var receipt = await tx.wait();
+        sMine.className = "step done";
+
+        var tokenAddr = null;
+        for (var i = 0; i < receipt.logs.length; i++) {
+          if (receipt.logs[i].topics[0] === TOKEN_CREATED_TOPIC0) {
+            tokenAddr = ethers.utils.getAddress("0x" + receipt.logs[i].topics[1].slice(-40));
+            break;
+          }
+        }
+        if (tokenAddr) {
+          addStep("done", "Token deployed", explorerLink("address", tokenAddr));
+        } else {
+          addStep("fail", "Mined, but no TokenCreated event found in receipt", "Check the transaction manually.");
+        }
+      } catch (err) {
+        console.error(err);
+        var last = el.steps.lastElementChild;
+        if (last && last.classList.contains("active")) {
+          last.className = "step fail";
+          var detailEl = last.querySelector(".detail");
+          if (detailEl) detailEl.textContent = decodeRevert(err);
+          else addStep("fail", "Failed", decodeRevert(err));
+        } else {
+          addStep("fail", "Launch failed", decodeRevert(err));
+        }
+      } finally {
+        el.launchBtn.disabled = false;
+      }
+    })();
+  });
+
+  refreshLaunchButtonState();
+})();
+</script>
