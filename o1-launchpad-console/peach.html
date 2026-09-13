@@ -84,8 +84,13 @@
   .form-surface h2 {
     font-family: "Chakra Petch", ui-sans-serif, sans-serif; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.03em;
-    font-size: 1.05rem; margin: 0 0 22px; color: var(--ink);
+    font-size: 1.05rem; margin: 0; color: var(--ink);
   }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin: 0 0 22px;
+  }
+  .randomize-btn { flex-shrink: 0; white-space: nowrap; }
   .form-surface h3 {
     font-family: "IBM Plex Mono", monospace; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.04em;
@@ -216,7 +221,10 @@
   </div>
 
   <div class="form-surface" id="formPanel">
-    <h2>New token</h2>
+    <div class="panel-head">
+      <h2>New token</h2>
+      <button class="small randomize-btn" id="randomizeBtn" type="button" title="Randomly fill name / symbol / description">🎲 Randomize</button>
+    </div>
 
     <h3>Basic information</h3>
     <div class="row2">
@@ -413,7 +421,7 @@
    "targetChainName",
    "chainBtn","chainMenu","chainDot","chainLabel","chainItemTestnet",
    "statFee","statQuote","statSnipeTax","statCurveFee","statMaxCreatorTax","statMaxInitialBuy",
-   "tokenName","tokenSymbol","tokenDesc","tokenImage",
+   "tokenName","tokenSymbol","tokenDesc","tokenImage","randomizeBtn",
    "quoteToken","initialBuyAmount","initialBuyHint",
    "socialTwitter","socialTelegram","socialDiscord","socialWebsite","socialFarcaster",
    "creatorTaxBps","feeRecipient","taxExemptions",
@@ -552,6 +560,39 @@
       el.initialBuyAmount.value = ethers.utils.formatUnits(amount, quoteTokenState.decimals);
     });
   });
+
+  // ---------- randomize name / symbol / description ----------
+  var RANDOM_ADJECTIVES = ["Turbo","Based","Feral","Cosmic","Rugged","Salty","Cracked","Goblin",
+    "Diamond","Unhinged","Sigma","Degenerate","Wojak","Bullish","Liquid","Silent","Rogue","Frantic"];
+  var RANDOM_NOUNS = ["Peach","Frog","Cat","Whale","Rocket","Goblin","Wizard","Duck","Ape","Llama",
+    "Turtle","Panda","Falcon","Ninja","Otter","Yeti","Sloth","Raccoon"];
+  var RANDOM_DESC_TEMPLATES = [
+    "{name} is a community-driven token launched on Peach's bonding curve — no presale, no team allocation.",
+    "The most {adj} token on Arc. {name} holders decide where it graduates.",
+    "{name} ({symbol}) — pure bonding curve degeneracy, straight from the curve to your wallet.",
+    "Just a {adj} meme token called {name}. Nothing more, nothing less.",
+    "{name}: born on Peach, raised by the curve, graduating to Uniswap V4 when it's ready."
+  ];
+
+  function randomFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function randomizeTokenFields() {
+    var adj = randomFrom(RANDOM_ADJECTIVES);
+    var noun = randomFrom(RANDOM_NOUNS);
+    var name = adj + " " + noun;
+    var symbol = (adj.slice(0, 4) + noun.slice(0, 4)).toUpperCase();
+    var descTemplate = randomFrom(RANDOM_DESC_TEMPLATES);
+    var description = descTemplate
+      .replace(/{name}/g, name)
+      .replace(/{symbol}/g, symbol)
+      .replace(/{adj}/g, adj.toLowerCase());
+
+    el.tokenName.value = name;
+    el.tokenSymbol.value = symbol;
+    el.tokenDesc.value = description;
+  }
+
+  el.randomizeBtn.addEventListener("click", randomizeTokenFields);
 
   el.connectBtn.addEventListener("click", function () {
     if (!hasInjectedWallet()) { el.noWalletBanner.hidden = false; return; }
