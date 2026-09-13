@@ -295,13 +295,13 @@
       <input type="text" id="socialFarcaster" maxlength="256" value="https://warpcast.com/launchpad" placeholder="https://warpcast.com/...">
     </div>
 
-    <details class="advanced">
+    <details class="advanced" open>
       <summary>Advanced — creator tax, fee recipient, tax exemptions</summary>
       <div class="adv-body">
         <div class="row2">
           <div class="field">
-            <label for="creatorTaxBps">Creator tax <span class="hint">— bps, bounded by on-chain maxCreatorTaxBps</span></label>
-            <input type="number" id="creatorTaxBps" value="0" min="0" step="1">
+            <label for="creatorTaxBps">Creator tax <span class="hint">— bps, bounded by on-chain maxCreatorTaxBps · <span id="creatorTaxPercent">0.00%</span></span></label>
+            <input type="number" id="creatorTaxBps" value="0" min="0" max="1000" step="1">
           </div>
           <div class="field">
             <label for="feeRecipient">Fee recipient <span class="hint">— optional, defaults to creator (your wallet) if left blank</span></label>
@@ -424,13 +424,25 @@
    "tokenName","tokenSymbol","tokenDesc","tokenImage","randomizeBtn",
    "quoteToken","initialBuyAmount","initialBuyHint",
    "socialTwitter","socialTelegram","socialDiscord","socialWebsite","socialFarcaster",
-   "creatorTaxBps","feeRecipient","taxExemptions",
+   "creatorTaxBps","creatorTaxPercent","feeRecipient","taxExemptions",
    "costLine","launchBtn","progressPanel","steps","formPanel"].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
 
   el.factoryAddrShort.textContent = short(FACTORY_TESTNET);
   el.forwarderAddrShort.textContent = short(FORWARDER_TESTNET);
+
+  function updateCreatorTaxPercent() {
+    var bps = parseInt(el.creatorTaxBps.value, 10) || 0;
+    el.creatorTaxPercent.textContent = (bps / 100).toFixed(2) + "%";
+  }
+  el.creatorTaxBps.addEventListener("input", updateCreatorTaxPercent);
+
+  // Default creator tax to a random value in [0, 1000] bps (0%-10%, the protocol's documented
+  // range) instead of always 0 — a static 0 default meant most test launches never exercised
+  // the creator-tax path at all.
+  el.creatorTaxBps.value = String(Math.floor(Math.random() * 1001));
+  updateCreatorTaxPercent();
 
   function short(addr) { return addr.slice(0, 6) + "…" + addr.slice(-4); }
 
@@ -708,7 +720,7 @@
           throw new Error("Creator tax exceeds on-chain maxCreatorTaxBps (" + liveMaxCreatorTaxBps + ").");
         }
         var feeRecipientRaw = el.feeRecipient.value.trim();
-        var creatorFeeRecipient = feeRecipientRaw ? ethers.utils.getAddress(feeRecipientRaw) : ethers.constants.AddressZero;
+        var creatorFeeRecipient = feeRecipientRaw ? ethers.utils.getAddress(feeRecipientRaw) : connectedAddress;
         var launchTaxExemptions = el.taxExemptions.value.trim() ? parseAddressList(el.taxExemptions.value) : [];
 
         var params = {
